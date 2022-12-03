@@ -231,7 +231,7 @@ mod tests {
         let user_value = "count".to_string();
 
         let binary = to_binary(&query_response).unwrap();
-        let json_value: Value = serde_json  ::from_slice(&binary).unwrap();
+        let json_value: Value = serde_json::from_slice(&binary).unwrap();
         println!("The JSON value as object is: {:?}", json_value.as_object());
 
         let json_map: String = match json_value.as_object() {
