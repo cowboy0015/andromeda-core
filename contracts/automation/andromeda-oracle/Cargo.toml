@@ -15,7 +15,7 @@ cw2 = "0.13.4"
 cw20 = "0.13.4"
 cw-utils = "0.13.4"
 semver = "1"
-serde-json-wasm = "0.4.1"
+serde_json = { git = "https://github.com/joemonem/serde_json_cosmwasm.git#168e0aa" }
 serde-json-value-wasm = { git = "https://github.com/chris-ricketts/serde-json-value-wasm" }
 
 andromeda-automation = { version = "0.1.0", path = "../../../packages/andromeda-automation" }

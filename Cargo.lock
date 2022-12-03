@@ -498,7 +498,7 @@ dependencies = [
  "semver",
  "serde",
  "serde-json-value-wasm",
- "serde-json-wasm",
+ "serde_json 0.1.0",
 ]
 
 [[package]]
@@ -889,7 +889,7 @@ dependencies = [
  "cosmwasm-schema-derive",
  "schemars",
  "serde",
- "serde_json",
+ "serde_json 1.0.89",
  "thiserror",
 ]
 
@@ -1489,7 +1489,7 @@ dependencies = [
  "dyn-clone",
  "schemars_derive",
  "serde",
- "serde_json",
+ "serde_json 1.0.89",
 ]
 
 [[package]]
@@ -1571,6 +1571,16 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "serde_json"
+version = "0.1.0"
+source = "git+https://github.com/joemonem/serde_json_cosmwasm.git#168e0aa#168e0aa2b9539f8a63133423a9bcd1919becaef7"
+dependencies = [
+ "itoa",
+ "ryu",
+ "serde",
 ]
 
 [[package]]

@@ -120,7 +120,7 @@ fn execute_fire(deps: DepsMut, _env: Env, info: MessageInfo) -> Result<Response,
     // Check authority
     let contract = ADOContract::default();
     ensure!(
-        contract.is_contract_owner(deps.storage, info.sender.as_ref())?,
+        contract.is_owner_or_operator(deps.storage, info.sender.as_ref())?,
         ContractError::Unauthorized {}
     );
     // Load target ADO's name

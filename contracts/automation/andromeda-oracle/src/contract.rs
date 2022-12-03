@@ -13,8 +13,8 @@ use cosmwasm_std::{
     ensure, entry_point, from_binary, to_binary, Binary, Deps, DepsMut, Env, MessageInfo,
     QueryRequest, Reply, Response, StdError, Uint128, WasmQuery,
 };
+use serde_json::from_slice;
 use serde_json_value_wasm::Value;
-use serde_json_wasm::from_slice;
 use std::env;
 
 use cw2::{get_contract_version, set_contract_version};
@@ -231,7 +231,7 @@ mod tests {
         let user_value = "count".to_string();
 
         let binary = to_binary(&query_response).unwrap();
-        let json_value: Value = serde_json_wasm::from_slice(&binary).unwrap();
+        let json_value: Value = serde_json  ::from_slice(&binary).unwrap();
         println!("The JSON value as object is: {:?}", json_value.as_object());
 
         let json_map: String = match json_value.as_object() {
