@@ -1,5 +1,5 @@
 {
-  "contract_name": "andromeda-storage",
+  "contract_name": "andromeda-evaluation",
   "contract_version": "0.1.0",
   "idl_version": "1.0.0",
   "instantiate": {
@@ -7,27 +7,62 @@
     "title": "InstantiateMsg",
     "type": "object",
     "required": [
-      "max_processes",
-      "process",
+      "condition_address",
+      "operation",
+      "oracle_address",
       "task_balancer"
     ],
     "properties": {
-      "max_processes": {
-        "type": "integer",
-        "format": "uint64",
-        "minimum": 0.0
+      "condition_address": {
+        "$ref": "#/definitions/AndrAddress"
       },
-      "process": {
-        "$ref": "#/definitions/Addr"
+      "operation": {
+        "$ref": "#/definitions/Operators"
+      },
+      "oracle_address": {
+        "$ref": "#/definitions/AndrAddress"
       },
       "task_balancer": {
-        "$ref": "#/definitions/Addr"
+        "$ref": "#/definitions/AndrAddress"
+      },
+      "user_value": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/Uint128"
+          },
+          {
+            "type": "null"
+          }
+        ]
       }
     },
     "additionalProperties": false,
     "definitions": {
-      "Addr": {
-        "description": "A human readable address.\n\nIn Cosmos, this is typically bech32 encoded. But for multi-chain smart contracts no assumptions should be made other than being UTF-8 encoded and of reasonable length.\n\nThis type represents a validated address. It can be created in the following ways 1. Use `Addr::unchecked(input)` 2. Use `let checked: Addr = deps.api.addr_validate(input)?` 3. Use `let checked: Addr = deps.api.addr_humanize(canonical_addr)?` 4. Deserialize from JSON. This must only be done from JSON that was validated before such as a contract's state. `Addr` must not be used in messages sent by the user because this would result in unvalidated instances.\n\nThis type is immutable. If you really need to mutate it (Really? Are you sure?), create a mutable copy using `let mut mutable = Addr::to_string()` and operate on that `String` instance.",
+      "AndrAddress": {
+        "type": "object",
+        "required": [
+          "identifier"
+        ],
+        "properties": {
+          "identifier": {
+            "description": "Can be either an address or identifier of an ADO in a app.",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Operators": {
+        "type": "string",
+        "enum": [
+          "greater",
+          "greater_equal",
+          "equal",
+          "less_equal",
+          "less"
+        ]
+      },
+      "Uint128": {
+        "description": "A thin wrapper around u128 that is using strings for JSON encoding/decoding, such that the full u128 range can be used for clients that convert JSON numbers to floats, like JavaScript and jq.\n\n# Examples\n\nUse `from` to create instances of this and `u128` to get the value out:\n\n``` # use cosmwasm_std::Uint128; let a = Uint128::from(123u128); assert_eq!(a.u128(), 123);\n\nlet b = Uint128::from(42u64); assert_eq!(b.u128(), 42);\n\nlet c = Uint128::from(70u32); assert_eq!(c.u128(), 70); ```",
         "type": "string"
       }
     }
@@ -51,17 +86,17 @@
       {
         "type": "object",
         "required": [
-          "store"
+          "change_condition_address"
         ],
         "properties": {
-          "store": {
+          "change_condition_address": {
             "type": "object",
             "required": [
-              "process"
+              "address"
             ],
             "properties": {
-              "process": {
-                "type": "string"
+              "address": {
+                "$ref": "#/definitions/AndrAddress"
               }
             },
             "additionalProperties": false
@@ -72,17 +107,17 @@
       {
         "type": "object",
         "required": [
-          "remove"
+          "change_query_address"
         ],
         "properties": {
-          "remove": {
+          "change_query_address": {
             "type": "object",
             "required": [
-              "process"
+              "address"
             ],
             "properties": {
-              "process": {
-                "type": "string"
+              "address": {
+                "$ref": "#/definitions/AndrAddress"
               }
             },
             "additionalProperties": false
@@ -511,6 +546,45 @@
       {
         "type": "object",
         "required": [
+          "condition_a_d_o"
+        ],
+        "properties": {
+          "condition_a_d_o": {
+            "type": "object",
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "evaluation"
+        ],
+        "properties": {
+          "evaluation": {
+            "type": "object",
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "oracle_a_d_o"
+        ],
+        "properties": {
+          "oracle_a_d_o": {
+            "type": "object",
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
           "task_balancer"
         ],
         "properties": {
@@ -524,10 +598,10 @@
       {
         "type": "object",
         "required": [
-          "processes"
+          "user_value"
         ],
         "properties": {
-          "processes": {
+          "user_value": {
             "type": "object",
             "additionalProperties": false
           }
@@ -537,32 +611,11 @@
       {
         "type": "object",
         "required": [
-          "free_space"
+          "operation"
         ],
         "properties": {
-          "free_space": {
+          "operation": {
             "type": "object",
-            "additionalProperties": false
-          }
-        },
-        "additionalProperties": false
-      },
-      {
-        "type": "object",
-        "required": [
-          "has_process"
-        ],
-        "properties": {
-          "has_process": {
-            "type": "object",
-            "required": [
-              "process"
-            ],
-            "properties": {
-              "process": {
-                "$ref": "#/definitions/Addr"
-              }
-            },
             "additionalProperties": false
           }
         },
@@ -570,10 +623,6 @@
       }
     ],
     "definitions": {
-      "Addr": {
-        "description": "A human readable address.\n\nIn Cosmos, this is typically bech32 encoded. But for multi-chain smart contracts no assumptions should be made other than being UTF-8 encoded and of reasonable length.\n\nThis type represents a validated address. It can be created in the following ways 1. Use `Addr::unchecked(input)` 2. Use `let checked: Addr = deps.api.addr_validate(input)?` 3. Use `let checked: Addr = deps.api.addr_humanize(canonical_addr)?` 4. Deserialize from JSON. This must only be done from JSON that was validated before such as a contract's state. `Addr` must not be used in messages sent by the user because this would result in unvalidated instances.\n\nThis type is immutable. If you really need to mutate it (Really? Are you sure?), create a mutable copy using `let mut mutable = Addr::to_string()` and operate on that `String` instance.",
-        "type": "string"
-      },
       "AndromedaQuery": {
         "oneOf": [
           {
@@ -911,35 +960,55 @@
         }
       }
     },
-    "free_space": {
+    "condition_a_d_o": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "String",
+      "type": "string"
+    },
+    "evaluation": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Boolean",
       "type": "boolean"
     },
-    "has_process": {
+    "operation": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Boolean",
-      "type": "boolean"
+      "title": "Operators",
+      "type": "string",
+      "enum": [
+        "greater",
+        "greater_equal",
+        "equal",
+        "less_equal",
+        "less"
+      ]
     },
-    "processes": {
+    "oracle_a_d_o": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Array_of_Addr",
-      "type": "array",
-      "items": {
-        "$ref": "#/definitions/Addr"
-      },
-      "definitions": {
-        "Addr": {
-          "description": "A human readable address.\n\nIn Cosmos, this is typically bech32 encoded. But for multi-chain smart contracts no assumptions should be made other than being UTF-8 encoded and of reasonable length.\n\nThis type represents a validated address. It can be created in the following ways 1. Use `Addr::unchecked(input)` 2. Use `let checked: Addr = deps.api.addr_validate(input)?` 3. Use `let checked: Addr = deps.api.addr_humanize(canonical_addr)?` 4. Deserialize from JSON. This must only be done from JSON that was validated before such as a contract's state. `Addr` must not be used in messages sent by the user because this would result in unvalidated instances.\n\nThis type is immutable. If you really need to mutate it (Really? Are you sure?), create a mutable copy using `let mut mutable = Addr::to_string()` and operate on that `String` instance.",
-          "type": "string"
-        }
-      }
+      "title": "String",
+      "type": "string"
     },
     "task_balancer": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Addr",
-      "description": "A human readable address.\n\nIn Cosmos, this is typically bech32 encoded. But for multi-chain smart contracts no assumptions should be made other than being UTF-8 encoded and of reasonable length.\n\nThis type represents a validated address. It can be created in the following ways 1. Use `Addr::unchecked(input)` 2. Use `let checked: Addr = deps.api.addr_validate(input)?` 3. Use `let checked: Addr = deps.api.addr_humanize(canonical_addr)?` 4. Deserialize from JSON. This must only be done from JSON that was validated before such as a contract's state. `Addr` must not be used in messages sent by the user because this would result in unvalidated instances.\n\nThis type is immutable. If you really need to mutate it (Really? Are you sure?), create a mutable copy using `let mut mutable = Addr::to_string()` and operate on that `String` instance.",
+      "title": "String",
       "type": "string"
+    },
+    "user_value": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Nullable_Uint128",
+      "anyOf": [
+        {
+          "$ref": "#/definitions/Uint128"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "definitions": {
+        "Uint128": {
+          "description": "A thin wrapper around u128 that is using strings for JSON encoding/decoding, such that the full u128 range can be used for clients that convert JSON numbers to floats, like JavaScript and jq.\n\n# Examples\n\nUse `from` to create instances of this and `u128` to get the value out:\n\n``` # use cosmwasm_std::Uint128; let a = Uint128::from(123u128); assert_eq!(a.u128(), 123);\n\nlet b = Uint128::from(42u64); assert_eq!(b.u128(), 42);\n\nlet c = Uint128::from(70u32); assert_eq!(c.u128(), 70); ```",
+          "type": "string"
+        }
+      }
     }
   }
 }

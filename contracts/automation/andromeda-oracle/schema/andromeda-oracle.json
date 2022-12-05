@@ -7,41 +7,73 @@
     "title": "InstantiateMsg",
     "type": "object",
     "required": [
-      "expected_type",
       "message_binary",
+      "return_type",
       "target_address"
     ],
     "properties": {
-      "expected_type": {
-        "$ref": "#/definitions/Types"
-      },
       "message_binary": {
-        "type": "string"
+        "$ref": "#/definitions/Binary"
+      },
+      "response_element": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "return_type": {
+        "$ref": "#/definitions/TypeOfResponse"
       },
       "target_address": {
-        "$ref": "#/definitions/AndrAddress"
+        "type": "string"
       }
     },
     "additionalProperties": false,
     "definitions": {
-      "AndrAddress": {
-        "type": "object",
-        "required": [
-          "identifier"
-        ],
-        "properties": {
-          "identifier": {
-            "description": "Can be either an address or identifier of an ADO in a app.",
-            "type": "string"
-          }
-        }
+      "Binary": {
+        "description": "Binary is a wrapper around Vec<u8> to add base64 de/serialization with serde. It also adds some helper methods to help encode inline.\n\nThis is only needed as serde-json-{core,wasm} has a horrible encoding for Vec<u8>. See also <https://github.com/CosmWasm/cosmwasm/blob/main/docs/MESSAGE_TYPES.md>.",
+        "type": "string"
       },
-      "Types": {
+      "CustomTypes": {
+        "type": "string",
+        "enum": [
+          "counter_response"
+        ]
+      },
+      "RegularTypes": {
         "type": "string",
         "enum": [
           "string",
           "bool",
           "uint128"
+        ]
+      },
+      "TypeOfResponse": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "regular_type"
+            ],
+            "properties": {
+              "regular_type": {
+                "$ref": "#/definitions/RegularTypes"
+              }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": [
+              "custom_type"
+            ],
+            "properties": {
+              "custom_type": {
+                "$ref": "#/definitions/CustomTypes"
+              }
+            },
+            "additionalProperties": false
+          }
         ]
       }
     }
@@ -89,7 +121,8 @@
               }
             ]
           }
-        }
+        },
+        "additionalProperties": false
       },
       "AndrAddress": {
         "type": "object",
@@ -101,7 +134,8 @@
             "description": "Can be either an address or identifier of an ADO in a app.",
             "type": "string"
           }
-        }
+        },
+        "additionalProperties": false
       },
       "AndromedaMsg": {
         "oneOf": [
@@ -140,7 +174,8 @@
                   "address": {
                     "type": "string"
                   }
-                }
+                },
+                "additionalProperties": false
               }
             },
             "additionalProperties": false
@@ -163,7 +198,8 @@
                       "type": "string"
                     }
                   }
-                }
+                },
+                "additionalProperties": false
               }
             },
             "additionalProperties": false
@@ -183,7 +219,8 @@
                   "address": {
                     "type": "string"
                   }
-                }
+                },
+                "additionalProperties": false
               }
             },
             "additionalProperties": false
@@ -216,7 +253,8 @@
                       "$ref": "#/definitions/Withdrawal"
                     }
                   }
-                }
+                },
+                "additionalProperties": false
               }
             },
             "additionalProperties": false
@@ -236,7 +274,8 @@
                   "module": {
                     "$ref": "#/definitions/Module"
                   }
-                }
+                },
+                "additionalProperties": false
               }
             },
             "additionalProperties": false
@@ -256,7 +295,8 @@
                   "module_idx": {
                     "$ref": "#/definitions/Uint64"
                   }
-                }
+                },
+                "additionalProperties": false
               }
             },
             "additionalProperties": false
@@ -280,7 +320,8 @@
                   "module_idx": {
                     "$ref": "#/definitions/Uint64"
                   }
-                }
+                },
+                "additionalProperties": false
               }
             },
             "additionalProperties": false
@@ -300,7 +341,8 @@
                   "contract": {
                     "type": "string"
                   }
-                }
+                },
+                "additionalProperties": false
               }
             },
             "additionalProperties": false
@@ -328,7 +370,8 @@
                       "null"
                     ]
                   }
-                }
+                },
+                "additionalProperties": false
               }
             },
             "additionalProperties": false
@@ -361,7 +404,8 @@
           "module_type": {
             "type": "string"
           }
-        }
+        },
+        "additionalProperties": false
       },
       "Recipient": {
         "oneOf": [
@@ -419,7 +463,8 @@
               }
             ]
           }
-        }
+        },
+        "additionalProperties": false
       },
       "WithdrawalType": {
         "oneOf": [
@@ -536,7 +581,8 @@
             ],
             "properties": {
               "owner": {
-                "type": "object"
+                "type": "object",
+                "additionalProperties": false
               }
             },
             "additionalProperties": false
@@ -548,7 +594,8 @@
             ],
             "properties": {
               "operators": {
-                "type": "object"
+                "type": "object",
+                "additionalProperties": false
               }
             },
             "additionalProperties": false
@@ -560,7 +607,8 @@
             ],
             "properties": {
               "type": {
-                "type": "object"
+                "type": "object",
+                "additionalProperties": false
               }
             },
             "additionalProperties": false
@@ -572,7 +620,8 @@
             ],
             "properties": {
               "original_publisher": {
-                "type": "object"
+                "type": "object",
+                "additionalProperties": false
               }
             },
             "additionalProperties": false
@@ -584,7 +633,8 @@
             ],
             "properties": {
               "block_height_upon_creation": {
-                "type": "object"
+                "type": "object",
+                "additionalProperties": false
               }
             },
             "additionalProperties": false
@@ -604,7 +654,8 @@
                   "address": {
                     "type": "string"
                   }
-                }
+                },
+                "additionalProperties": false
               }
             },
             "additionalProperties": false
@@ -624,7 +675,8 @@
                   "id": {
                     "$ref": "#/definitions/Uint64"
                   }
-                }
+                },
+                "additionalProperties": false
               }
             },
             "additionalProperties": false
@@ -636,7 +688,8 @@
             ],
             "properties": {
               "module_ids": {
-                "type": "object"
+                "type": "object",
+                "additionalProperties": false
               }
             },
             "additionalProperties": false
@@ -648,7 +701,8 @@
             ],
             "properties": {
               "version": {
-                "type": "object"
+                "type": "object",
+                "additionalProperties": false
               }
             },
             "additionalProperties": false
@@ -698,7 +752,8 @@
           ],
           "properties": {
             "owner": {
-              "type": "object"
+              "type": "object",
+              "additionalProperties": false
             }
           },
           "additionalProperties": false
@@ -710,7 +765,8 @@
           ],
           "properties": {
             "operators": {
-              "type": "object"
+              "type": "object",
+              "additionalProperties": false
             }
           },
           "additionalProperties": false
@@ -722,7 +778,8 @@
           ],
           "properties": {
             "type": {
-              "type": "object"
+              "type": "object",
+              "additionalProperties": false
             }
           },
           "additionalProperties": false
@@ -734,7 +791,8 @@
           ],
           "properties": {
             "original_publisher": {
-              "type": "object"
+              "type": "object",
+              "additionalProperties": false
             }
           },
           "additionalProperties": false
@@ -746,7 +804,8 @@
           ],
           "properties": {
             "block_height_upon_creation": {
-              "type": "object"
+              "type": "object",
+              "additionalProperties": false
             }
           },
           "additionalProperties": false
@@ -766,7 +825,8 @@
                 "address": {
                   "type": "string"
                 }
-              }
+              },
+              "additionalProperties": false
             }
           },
           "additionalProperties": false
@@ -786,7 +846,8 @@
                 "id": {
                   "$ref": "#/definitions/Uint64"
                 }
-              }
+              },
+              "additionalProperties": false
             }
           },
           "additionalProperties": false
@@ -798,7 +859,8 @@
           ],
           "properties": {
             "module_ids": {
-              "type": "object"
+              "type": "object",
+              "additionalProperties": false
             }
           },
           "additionalProperties": false
@@ -810,7 +872,8 @@
           ],
           "properties": {
             "version": {
-              "type": "object"
+              "type": "object",
+              "additionalProperties": false
             }
           },
           "additionalProperties": false
