@@ -1576,7 +1576,7 @@ dependencies = [
 [[package]]
 name = "serde_json"
 version = "0.1.0"
-source = "git+https://github.com/joemonem/serde_json_cosmwasm.git#168e0aa#168e0aa2b9539f8a63133423a9bcd1919becaef7"
+source = "git+https://github.com/joemonem/serde_json_cosmwasm.git?rev=168e0aa#168e0aa2b9539f8a63133423a9bcd1919becaef7"
 dependencies = [
  "itoa",
  "ryu",
