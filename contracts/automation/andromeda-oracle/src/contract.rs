@@ -15,6 +15,7 @@ use cosmwasm_std::{
 };
 use serde_json::from_slice;
 use serde_json_value_wasm::Value;
+
 use std::env;
 
 use cw2::{get_contract_version, set_contract_version};
@@ -155,29 +156,27 @@ fn query_target(deps: Deps) -> Result<String, ContractError> {
             .querier
             .query(&QueryRequest::Wasm(WasmQuery::Smart { contract_addr, msg }))?;
         Ok(response)
-    }
-    //  else if expected_response == TypeOfResponse::CustomType(CustomTypes::CounterResponse) {
-    //     let query_response: CounterResponse = deps
-    //         .querier
-    //         .query(&QueryRequest::Wasm(WasmQuery::Smart { contract_addr, msg }))?;
+    } else if expected_response == TypeOfResponse::CustomType(CustomTypes::CounterResponse) {
+        let query_response: CounterResponse = deps
+            .querier
+            .query(&QueryRequest::Wasm(WasmQuery::Smart { contract_addr, msg }))?;
 
-    //     let binary_response = to_binary(&query_response).unwrap();
-    //     let response_value: Value = from_slice(&binary_response).unwrap();
+        let binary_response = to_binary(&query_response).unwrap();
+        let response_value: Value = from_slice(&binary_response).unwrap();
 
-    //     if let Some(response_element) = response_element {
-    //         let json_map: String = match response_value.as_object() {
-    //             Some(obj) => {
-    //                 let string_obj = obj[&response_element].as_str().unwrap().to_string();
-    //                 string_obj
-    //             }
-    //             None => "Couldn't parse result".to_string(),
-    //         };
-    //         Ok(json_map)
-    //     } else {
-    //         Err(ContractError::ResponseElementRequired {})
-    //     }
-    // }
-    else {
+        if let Some(response_element) = response_element {
+            let json_map: String = match response_value.as_object() {
+                Some(obj) => {
+                    let string_obj = obj[&response_element].as_str().unwrap().to_string();
+                    string_obj
+                }
+                None => "Couldn't parse result".to_string(),
+            };
+            Ok(json_map)
+        } else {
+            Err(ContractError::ResponseElementRequired {})
+        }
+    } else {
         Err(ContractError::UnsupportedReturnType {})
     }
 }
@@ -195,7 +194,7 @@ mod tests {
         to_binary, Uint128,
     };
 
-    // use serde_json_value_wasm::Value;
+    use serde_json_value_wasm::Value;
     #[test]
     fn test_initialization() {
         let mut deps = mock_dependencies_custom(&[]);
