@@ -1,5 +1,5 @@
 use crate::state::{
-    CONDITION_ADO_ADDRESS, OPERATION, ORACLE_ADO_ADDRESS, TASK_BALANCER_ADDRESS, VALUE,
+    CONDITION_ADO_ADDRESS, OPERATION, ORACLE_ADO_ADDRESS, TASK_BALANCER_ADDRESS, USER_VALUE,
 };
 use ado_base::state::ADOContract;
 use andromeda_automation::evaluation::{
@@ -39,9 +39,9 @@ pub fn instantiate(
 
     // If the user doesn't provide a value, we assume that the oracle ADO will be returning a boolean
     if let Some(user_value) = msg.user_value {
-        VALUE.save(deps.storage, &Some(user_value))?;
+        USER_VALUE.save(deps.storage, &Some(user_value))?;
     } else {
-        VALUE.save(deps.storage, &None)?;
+        USER_VALUE.save(deps.storage, &None)?;
     }
 
     OPERATION.save(deps.storage, &msg.operation)?;
@@ -186,7 +186,25 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> Result<Binary, ContractErro
         QueryMsg::ConditionADO {} => encode_binary(&query_condition_ado(deps)?),
         QueryMsg::Evaluation {} => encode_binary(&query_evaluation(deps, env)?),
         QueryMsg::OracleADO {} => encode_binary(&query_oracle_ado(deps)?),
+        QueryMsg::TaskBalancer {} => encode_binary(&query_task_balancer(deps)?),
+        QueryMsg::UserValue {} => encode_binary(&query_user_value(deps)?),
+        QueryMsg::Operation {} => encode_binary(&query_operation(deps)?),
     }
+}
+
+fn query_operation(deps: Deps) -> Result<Operators, ContractError> {
+    let operation = OPERATION.load(deps.storage)?;
+    Ok(operation)
+}
+
+fn query_user_value(deps: Deps) -> Result<Option<Uint128>, ContractError> {
+    let value = USER_VALUE.load(deps.storage)?;
+    Ok(value)
+}
+
+fn query_task_balancer(deps: Deps) -> Result<String, ContractError> {
+    let address = TASK_BALANCER_ADDRESS.load(deps.storage)?;
+    Ok(address.identifier)
 }
 
 fn query_evaluation(deps: Deps, _env: Env) -> Result<bool, ContractError> {
@@ -194,7 +212,7 @@ fn query_evaluation(deps: Deps, _env: Env) -> Result<bool, ContractError> {
     let app_contract = contract.get_app_contract(deps.storage)?;
 
     let operation = OPERATION.load(deps.storage)?;
-    let user_value = VALUE.load(deps.storage)?;
+    let user_value = USER_VALUE.load(deps.storage)?;
 
     // Get the address of the oracle contract that will provide data to be compared with the user's data
     let oracle_addr = ORACLE_ADO_ADDRESS.load(deps.storage)?.get_address(

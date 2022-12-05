@@ -35,6 +35,9 @@ pub enum QueryMsg {
 
     #[returns(Vec<AndrAddress>)]
     EvalAdos {},
+
+    #[returns(AndrAddress)]
+    ExecuteAdo {},
 }
 
 #[cw_serde]

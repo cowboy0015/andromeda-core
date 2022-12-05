@@ -5,7 +5,10 @@ use ado_base::state::ADOContract;
 use andromeda_automation::counter::{
     CounterResponse, ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg,
 };
-use common::{ado_base::InstantiateMsg as BaseInstantiateMsg, encode_binary, error::ContractError};
+use common::{
+    ado_base::InstantiateMsg as BaseInstantiateMsg, app::AndrAddress, encode_binary,
+    error::ContractError,
+};
 use cosmwasm_std::{
     ensure, entry_point, Binary, Deps, DepsMut, Env, MessageInfo, Reply, Response, StdError,
     Uint128,
@@ -174,6 +177,7 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> Result<Binary, ContractErro
         QueryMsg::Count {} => encode_binary(&query_count(deps)?),
         QueryMsg::CurrentCount {} => encode_binary(&query_current_count(deps)?),
         QueryMsg::IsZero {} => encode_binary(&query_is_zero(deps)?),
+        QueryMsg::Whitelist {} => encode_binary(&query_whitelist(deps)?),
     }
 }
 
@@ -202,6 +206,11 @@ fn query_current_count(deps: Deps) -> Result<Uint128, ContractError> {
 fn query_is_zero(deps: Deps) -> Result<bool, ContractError> {
     let count = COUNT.load(deps.storage)?;
     Ok(count == Uint128::zero())
+}
+
+fn query_whitelist(deps: Deps) -> Result<Vec<AndrAddress>, ContractError> {
+    let whitelist = WHITELIST.load(deps.storage)?;
+    Ok(whitelist)
 }
 
 #[cfg(test)]

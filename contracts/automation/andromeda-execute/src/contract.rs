@@ -190,6 +190,8 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> Result<Binary, ContractErro
         QueryMsg::AndrQuery(msg) => ADOContract::default().query(deps, env, msg, query),
         QueryMsg::TargetADO {} => encode_binary(&query_execute_ado(deps)?),
         QueryMsg::ConditionADO {} => encode_binary(&query_condition_ado(deps)?),
+        QueryMsg::TaskBalancer {} => encode_binary(&query_task_balancer(deps)?),
+        QueryMsg::TargetMessage {} => encode_binary(&query_target_message(deps)?),
     }
 }
 
@@ -201,6 +203,17 @@ fn query_condition_ado(deps: Deps) -> Result<String, ContractError> {
 fn query_execute_ado(deps: Deps) -> Result<String, ContractError> {
     let address = TARGET_ADO_ADDRESS.load(deps.storage)?;
     Ok(address.identifier)
+}
+
+fn query_task_balancer(deps: Deps) -> Result<String, ContractError> {
+    let address = TASK_BALANCER.load(deps.storage)?;
+    Ok(address.to_string())
+}
+
+fn query_target_message(deps: Deps) -> Result<String, ContractError> {
+    let binary_message = TARGET_MSG.load(deps.storage)?;
+    let decoded_message: String = from_binary(&binary_message)?;
+    Ok(decoded_message)
 }
 
 #[cfg(test)]

@@ -39,6 +39,10 @@ pub enum QueryMsg {
     ConditionADO {},
     #[returns(String)]
     TargetADO {},
+    #[returns(String)]
+    TaskBalancer {},
+    #[returns(String)]
+    TargetMessage {},
 }
 #[cw_serde]
 pub enum Increment {

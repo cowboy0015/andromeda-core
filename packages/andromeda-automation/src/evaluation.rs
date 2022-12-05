@@ -47,6 +47,15 @@ pub enum QueryMsg {
 
     #[returns(String)]
     OracleADO {},
+
+    #[returns(String)]
+    TaskBalancer {},
+
+    #[returns(Option<Uint128>)]
+    UserValue {},
+
+    #[returns(Operators)]
+    Operation {},
 }
 
 #[cw_serde]

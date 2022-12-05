@@ -36,6 +36,9 @@ pub enum QueryMsg {
 
     #[returns(bool)]
     IsZero {},
+
+    #[returns(Vec<AndrAddress>)]
+    Whitelist {},
 }
 
 #[cw_serde]

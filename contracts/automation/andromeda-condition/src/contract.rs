@@ -353,7 +353,8 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> Result<Binary, ContractErro
     match msg {
         QueryMsg::AndrQuery(msg) => ADOContract::default().query(deps, env, msg, query),
         QueryMsg::LogicGate {} => encode_binary(&query_logic_gate(deps)?),
-        QueryMsg::EvalAdos {} => encode_binary(&query_whitelist(deps)?),
+        QueryMsg::EvalAdos {} => encode_binary(&query_eval_ados(deps)?),
+        QueryMsg::ExecuteAdo {} => encode_binary(&query_execute_ado(deps)?),
     }
 }
 
@@ -361,8 +362,12 @@ fn query_logic_gate(deps: Deps) -> Result<LogicGate, ContractError> {
     Ok(LOGIC_GATE.load(deps.storage)?)
 }
 
-fn query_whitelist(deps: Deps) -> Result<Vec<AndrAddress>, ContractError> {
+fn query_eval_ados(deps: Deps) -> Result<Vec<AndrAddress>, ContractError> {
     Ok(EVAL_ADOS.load(deps.storage)?)
+}
+
+fn query_execute_ado(deps: Deps) -> Result<AndrAddress, ContractError> {
+    Ok(EXECUTE_ADO.load(deps.storage)?)
 }
 
 #[cfg(test)]
