@@ -13,8 +13,8 @@ use cosmwasm_std::{
     ensure, entry_point, from_binary, to_binary, Binary, Deps, DepsMut, Env, MessageInfo,
     QueryRequest, Reply, Response, StdError, Uint128, WasmQuery,
 };
-use serde_json_value_wasm::Value;
-use serde_json_wasm::from_slice;
+// use serde_json_value_wasm::Value;
+// use serde_json_wasm::from_slice;
 use std::env;
 
 use cw2::{get_contract_version, set_contract_version};
@@ -155,27 +155,29 @@ fn query_target(deps: Deps) -> Result<String, ContractError> {
             .querier
             .query(&QueryRequest::Wasm(WasmQuery::Smart { contract_addr, msg }))?;
         Ok(response)
-    } else if expected_response == TypeOfResponse::CustomType(CustomTypes::CounterResponse) {
-        let query_response: CounterResponse = deps
-            .querier
-            .query(&QueryRequest::Wasm(WasmQuery::Smart { contract_addr, msg }))?;
+    }
+    //  else if expected_response == TypeOfResponse::CustomType(CustomTypes::CounterResponse) {
+    //     let query_response: CounterResponse = deps
+    //         .querier
+    //         .query(&QueryRequest::Wasm(WasmQuery::Smart { contract_addr, msg }))?;
 
-        let binary_response = to_binary(&query_response).unwrap();
-        let response_value: Value = from_slice(&binary_response).unwrap();
+    //     let binary_response = to_binary(&query_response).unwrap();
+    //     let response_value: Value = from_slice(&binary_response).unwrap();
 
-        if let Some(response_element) = response_element {
-            let json_map: String = match response_value.as_object() {
-                Some(obj) => {
-                    let string_obj = obj[&response_element].as_str().unwrap().to_string();
-                    string_obj
-                }
-                None => "Couldn't parse result".to_string(),
-            };
-            Ok(json_map)
-        } else {
-            Err(ContractError::ResponseElementRequired {})
-        }
-    } else {
+    //     if let Some(response_element) = response_element {
+    //         let json_map: String = match response_value.as_object() {
+    //             Some(obj) => {
+    //                 let string_obj = obj[&response_element].as_str().unwrap().to_string();
+    //                 string_obj
+    //             }
+    //             None => "Couldn't parse result".to_string(),
+    //         };
+    //         Ok(json_map)
+    //     } else {
+    //         Err(ContractError::ResponseElementRequired {})
+    //     }
+    // }
+    else {
         Err(ContractError::UnsupportedReturnType {})
     }
 }
@@ -193,7 +195,7 @@ mod tests {
         to_binary, Uint128,
     };
 
-    use serde_json_value_wasm::Value;
+    // use serde_json_value_wasm::Value;
     #[test]
     fn test_initialization() {
         let mut deps = mock_dependencies_custom(&[]);
@@ -222,34 +224,34 @@ mod tests {
         assert_eq!(actual_binary, vec_bin);
     }
 
-    #[test]
-    fn test_json_conversion() {
-        let query_response = CounterResponse {
-            count: Uint128::new(1),
-            previous_count: Uint128::zero(),
-        };
-        let user_value = "count".to_string();
+    // #[test]
+    // fn test_json_conversion() {
+    //     let query_response = CounterResponse {
+    //         count: Uint128::new(1),
+    //         previous_count: Uint128::zero(),
+    //     };
+    //     let user_value = "count".to_string();
 
-        let binary = to_binary(&query_response).unwrap();
-        let json_value: Value = serde_json_wasm::from_slice(&binary).unwrap();
-        println!("The JSON value as object is: {:?}", json_value.as_object());
+    //     let binary = to_binary(&query_response).unwrap();
+    //     let json_value: Value = serde_json_wasm::from_slice(&binary).unwrap();
+    //     println!("The JSON value as object is: {:?}", json_value.as_object());
 
-        let json_map: String = match json_value.as_object() {
-            Some(obj) => {
-                assert!(
-                    obj.keys().len() == 2,
-                    "Unexpected: too many top-level items in JSON"
-                );
-                let string_obj = obj[&user_value].as_str().unwrap().to_string();
-                string_obj
-            }
-            None => {
-                panic!("Unable to get JSON object");
-            }
-        };
-        let parsed_result: Uint128 = json_map.parse().unwrap();
-        assert_eq!(parsed_result, Uint128::new(1));
-    }
+    //     let json_map: String = match json_value.as_object() {
+    //         Some(obj) => {
+    //             assert!(
+    //                 obj.keys().len() == 2,
+    //                 "Unexpected: too many top-level items in JSON"
+    //             );
+    //             let string_obj = obj[&user_value].as_str().unwrap().to_string();
+    //             string_obj
+    //         }
+    //         None => {
+    //             panic!("Unable to get JSON object");
+    //         }
+    //     };
+    //     let parsed_result: Uint128 = json_map.parse().unwrap();
+    //     assert_eq!(parsed_result, Uint128::new(1));
+    // }
 
     #[test]
     fn test_uint128() {
@@ -369,52 +371,52 @@ mod tests {
         assert_eq!(parsed_result, Uint128::new(1));
     }
 
-    #[test]
-    fn test_counter_response_count_no_response_element() {
-        let mut deps = mock_dependencies_custom(&[]);
-        let target_address = MOCK_RESPONSE_COUNTER_CONTRACT.to_string();
+    // #[test]
+    // fn test_counter_response_count_no_response_element() {
+    //     let mut deps = mock_dependencies_custom(&[]);
+    //     let target_address = MOCK_RESPONSE_COUNTER_CONTRACT.to_string();
 
-        let msg = InstantiateMsg {
-            target_address,
-            // Count msg
-            message_binary: to_binary("eyJjb3VudCI6e319").unwrap(),
-            return_type: TypeOfResponse::CustomType(CustomTypes::CounterResponse),
-            response_element: None,
-        };
-        let info = mock_info("creator", &[]);
+    //     let msg = InstantiateMsg {
+    //         target_address,
+    //         // Count msg
+    //         message_binary: to_binary("eyJjb3VudCI6e319").unwrap(),
+    //         return_type: TypeOfResponse::CustomType(CustomTypes::CounterResponse),
+    //         response_element: None,
+    //     };
+    //     let info = mock_info("creator", &[]);
 
-        // we can just call .unwrap() to assert this was a success
-        let res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
-        assert_eq!(0, res.messages.len());
+    //     // we can just call .unwrap() to assert this was a success
+    //     let res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
+    //     assert_eq!(0, res.messages.len());
 
-        let err = query_target(deps.as_ref()).unwrap_err();
-        assert_eq!(err, ContractError::ResponseElementRequired {});
-    }
+    //     let err = query_target(deps.as_ref()).unwrap_err();
+    //     assert_eq!(err, ContractError::ResponseElementRequired {});
+    // }
 
-    #[test]
-    fn test_counter_response_previous_count() {
-        let mut deps = mock_dependencies_custom(&[]);
-        let target_address = MOCK_RESPONSE_COUNTER_CONTRACT.to_string();
+    // #[test]
+    // fn test_counter_response_previous_count() {
+    //     let mut deps = mock_dependencies_custom(&[]);
+    //     let target_address = MOCK_RESPONSE_COUNTER_CONTRACT.to_string();
 
-        let msg = InstantiateMsg {
-            target_address,
-            // Count msg
-            message_binary: to_binary("eyJjb3VudCI6e319").unwrap(),
-            return_type: TypeOfResponse::CustomType(CustomTypes::CounterResponse),
-            response_element: Some("previous_count".to_string()),
-        };
-        let info = mock_info("creator", &[]);
+    //     let msg = InstantiateMsg {
+    //         target_address,
+    //         // Count msg
+    //         message_binary: to_binary("eyJjb3VudCI6e319").unwrap(),
+    //         return_type: TypeOfResponse::CustomType(CustomTypes::CounterResponse),
+    //         response_element: Some("previous_count".to_string()),
+    //     };
+    //     let info = mock_info("creator", &[]);
 
-        // we can just call .unwrap() to assert this was a success
-        let res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
-        assert_eq!(0, res.messages.len());
+    //     // we can just call .unwrap() to assert this was a success
+    //     let res = instantiate(deps.as_mut(), mock_env(), info, msg).unwrap();
+    //     assert_eq!(0, res.messages.len());
 
-        let res = query_target(deps.as_ref()).unwrap();
+    //     let res = query_target(deps.as_ref()).unwrap();
 
-        println!("Pre-parsed result: {:?}", res);
-        let parsed_result: Uint128 = res.parse().unwrap();
-        println!("From String version: {:?}", parsed_result);
+    //     println!("Pre-parsed result: {:?}", res);
+    //     let parsed_result: Uint128 = res.parse().unwrap();
+    //     println!("From String version: {:?}", parsed_result);
 
-        assert_eq!(parsed_result, Uint128::zero());
-    }
+    //     assert_eq!(parsed_result, Uint128::zero());
+    // }
 }

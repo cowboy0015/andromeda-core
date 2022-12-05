@@ -34,6 +34,7 @@ pub fn instantiate(
 
     LOGIC_GATE.save(deps.storage, &msg.logic_gate)?;
     EVAL_ADOS.save(deps.storage, &msg.eval_ados)?;
+
     EXECUTE_ADO.save(deps.storage, &msg.execute_ado)?;
 
     ADOContract::default().instantiate(
@@ -740,7 +741,6 @@ mod tests {
             },
         };
         let _res = instantiate(deps.as_mut(), env, info, msg).unwrap();
-
         let msg = ExecuteMsg::GetResults {};
         let info = mock_info("creator", &[]);
         let res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
@@ -869,7 +869,6 @@ mod tests {
             },
         };
         let _res = instantiate(deps.as_mut(), env, info, msg).unwrap();
-
         let msg = ExecuteMsg::GetResults {};
         let info = mock_info("creator", &[]);
         let res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
