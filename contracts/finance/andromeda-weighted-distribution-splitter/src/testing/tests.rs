@@ -334,7 +334,7 @@ fn test_execute_update_lock_already_locked() {
 
     let owner = "creator";
 
-    // Start off with an expiration that's ahead current time (unexpired)
+    // Start off with an expiration that 's ahead current time (unexpired)
     let splitter = Splitter {
         recipients: vec![],
         lock: Expiration::AtTime(Timestamp::from_seconds(current_time + 1)),

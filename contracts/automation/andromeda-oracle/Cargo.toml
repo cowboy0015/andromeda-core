@@ -18,7 +18,6 @@ semver = "1"
 serde_json = { git = "https://github.com/joemonem/serde_json_cosmwasm.git", rev = "168e0aa" }
 serde-json-value-wasm = { git = "https://github.com/chris-ricketts/serde-json-value-wasm" }
 
-
 andromeda-automation = { version = "0.1.0", path = "../../../packages/andromeda-automation" }
 ado-base = { path = "../../../packages/ado-base", version = "0.1.0" }
 common = { version = "0.1.0", path = "../../../packages/common" }

@@ -1,16 +1,14 @@
+use common::ado_base::{modules::Module, AndromedaMsg, AndromedaQuery};
+use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Binary, Uint128};
+use cw20::Expiration;
 use cw20::{Cw20Coin, Logo, MinterResponse};
 use cw20_base::msg::{
     ExecuteMsg as Cw20ExecuteMsg, InstantiateMarketingInfo, InstantiateMsg as Cw20InstantiateMsg,
     QueryMsg as Cw20QueryMsg,
 };
-use cw_utils::Expiration;
-use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
 
-use common::ado_base::{modules::Module, AndromedaMsg, AndromedaQuery};
-
-#[derive(Serialize, Deserialize, JsonSchema, Debug, Clone, PartialEq)]
+#[cw_serde]
 pub struct InstantiateMsg {
     pub name: String,
     pub symbol: String,
@@ -34,8 +32,7 @@ impl From<InstantiateMsg> for Cw20InstantiateMsg {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, PartialEq, JsonSchema, Debug)]
-#[serde(rename_all = "snake_case")]
+#[cw_serde]
 pub enum ExecuteMsg {
     /// Transfer is a base message to move tokens to another account without triggering actions
     Transfer {
@@ -182,12 +179,11 @@ impl From<ExecuteMsg> for Cw20ExecuteMsg {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, JsonSchema)]
+#[cw_serde]
 #[serde(rename_all = "snake_case")]
 pub struct MigrateMsg {}
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
+#[cw_serde]
 pub enum QueryMsg {
     AndrQuery(AndromedaQuery),
     /// Returns the current balance of the given address, 0 if unset.

@@ -20,9 +20,6 @@ pub enum ContractError {
     #[error("{0}")]
     ParseReply(#[from] ParseReplyError),
 
-    #[error("{0}")]
-    Payment(#[from] PaymentError),
-
     #[error("Unauthorized")]
     Unauthorized {},
 
@@ -367,6 +364,9 @@ pub enum ContractError {
     #[error("TokenNotWrappedByThisContract")]
     TokenNotWrappedByThisContract {},
 
+    #[error("NonPayable")]
+    NonPayable {},
+
     #[error("InvalidMetadata")]
     InvalidMetadata {},
 
@@ -493,6 +493,9 @@ pub enum ContractError {
     #[error("Token not available")]
     TokenNotAvailable {},
 
+    #[error("Invalid expiration")]
+    InvalidExpiration {},
+
     #[error("Too many mint messages, limit is {limit}")]
     TooManyMintMessages { limit: u32 },
 
@@ -534,6 +537,7 @@ impl From<Cw20ContractError> for ContractError {
             Cw20ContractError::DuplicateInitialBalanceAddresses {} => {
                 ContractError::DuplicateInitialBalanceAddresses {}
             }
+            Cw20ContractError::InvalidExpiration {} => ContractError::InvalidExpiration {},
         }
     }
 }
@@ -567,5 +571,11 @@ impl From<FromUtf8Error> for ContractError {
 impl From<OverflowError> for ContractError {
     fn from(_err: OverflowError) -> Self {
         ContractError::Overflow {}
+    }
+}
+
+impl From<PaymentError> for ContractError {
+    fn from(_err: PaymentError) -> Self {
+        ContractError::NonPayable {}
     }
 }

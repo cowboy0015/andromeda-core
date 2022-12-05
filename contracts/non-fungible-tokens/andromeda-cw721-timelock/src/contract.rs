@@ -1,6 +1,6 @@
 use ado_base::state::ADOContract;
 use andromeda_non_fungible_tokens::cw721_timelock::{
-    Cw721HookMsg, ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg,
+    Cw721HookMsg, ExecuteMsg, InstantiateMsg, LockDetails, MigrateMsg, QueryMsg,
 };
 use common::{ado_base::InstantiateMsg as BaseInstantiateMsg, encode_binary, error::ContractError};
 use cosmwasm_std::{
@@ -8,11 +8,11 @@ use cosmwasm_std::{
     StdError, WasmMsg,
 };
 use cw2::{get_contract_version, set_contract_version};
-use cw721::{Cw721ExecuteMsg, Cw721ReceiveMsg, Expiration};
-use cw_utils::nonpayable;
+use cw721::{Cw721ExecuteMsg, Cw721ReceiveMsg};
+use cw_utils::{nonpayable, Expiration};
 use semver::Version;
 
-use crate::state::{LockDetails, LOCKED_ITEMS};
+use crate::state::LOCKED_ITEMS;
 
 // 1 day in seconds
 const ONE_DAY: u64 = 86_400;
@@ -232,7 +232,7 @@ mod test {
     use andromeda_non_fungible_tokens::cw721_timelock::{ExecuteMsg, InstantiateMsg};
     use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info, MOCK_CONTRACT_ADDR};
     use cosmwasm_std::{Addr, BlockInfo, ContractInfo, TransactionInfo};
-    use cw721::Expiration;
+    use cw_utils::Expiration;
 
     #[test]
     fn test_instantiate() {

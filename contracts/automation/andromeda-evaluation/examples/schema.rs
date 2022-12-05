@@ -1,6 +1,5 @@
-use cosmwasm_schema::write_api;
-
 use andromeda_automation::evaluation::{ExecuteMsg, InstantiateMsg, QueryMsg};
+use cosmwasm_schema::write_api;
 
 fn main() {
     write_api! {
