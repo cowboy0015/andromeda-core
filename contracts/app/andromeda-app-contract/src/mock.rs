@@ -9,6 +9,11 @@ pub fn mock_andromeda_app() -> Box<dyn Contract<Empty>> {
     Box::new(contract)
 }
 
+pub fn mock_andromeda_process() -> Box<dyn Contract<Empty>> {
+    let contract = ContractWrapper::new_with_empty(execute, instantiate, query).with_reply(reply);
+    Box::new(contract)
+}
+
 pub fn mock_app_instantiate_msg(
     name: String,
     app_components: Vec<AppComponent>,

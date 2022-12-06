@@ -13,9 +13,11 @@ pub struct InstantiateMsg {
 #[cw_serde]
 pub enum ExecuteMsg {
     AndrReceive(AndromedaMsg),
-    /// Evaluates 2 pieces of data
+    /// Increments the count by one
     IncrementOne {},
+    /// Increments the count by two
     IncrementTwo {},
+    /// Resets the count to zero
     Reset {},
 }
 
