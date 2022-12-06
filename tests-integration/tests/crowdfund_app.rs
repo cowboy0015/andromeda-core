@@ -26,8 +26,9 @@ use common::{
     app::AndrAddress,
 };
 use cosmwasm_std::{coin, to_binary, Addr, BlockInfo, Coin, Decimal, Uint128};
-use cw721::{Expiration, OwnerOfResponse};
+use cw721::OwnerOfResponse;
 use cw_multi_test::{App, Executor};
+use cw_utils::Expiration;
 
 fn mock_app() -> App {
     App::new(|router, _api, storage| {

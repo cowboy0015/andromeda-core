@@ -18,6 +18,21 @@ pub fn mock_app_instantiate_msg(
         app_components,
         name,
         primitive_contract,
+        target_ados: None,
+    }
+}
+
+pub fn mock_process_instantiate_msg(
+    name: String,
+    app_components: Vec<AppComponent>,
+    primitive_contract: String,
+    target_ados: Vec<String>,
+) -> InstantiateMsg {
+    InstantiateMsg {
+        app_components,
+        name,
+        primitive_contract,
+        target_ados: Some(target_ados),
     }
 }
 
@@ -25,6 +40,10 @@ pub fn mock_claim_ownership_msg(component_name: Option<String>) -> ExecuteMsg {
     ExecuteMsg::ClaimOwnership {
         name: component_name,
     }
+}
+
+pub fn mock_fire_msg() -> ExecuteMsg {
+    ExecuteMsg::Fire {}
 }
 
 pub fn mock_get_components_msg() -> QueryMsg {

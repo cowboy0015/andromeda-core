@@ -35,6 +35,16 @@ andromeda-vault = { path = "../contracts/ecosystem/andromeda-vault", features = 
 andromeda-finance = { path = "../packages/andromeda-finance"}
 andromeda-splitter = { path = "../contracts/finance/andromeda-splitter", features = ["testing"] }
 
+#Automation
+andromeda-automation = { path = "../packages/andromeda-automation"}
+andromeda-condition = { path = "../contracts/automation/andromeda-condition", features = ["testing"] }
+andromeda-counter = { path = "../contracts/automation/andromeda-counter", features = ["testing"] }
+andromeda-evaluation = { path = "../contracts/automation/andromeda-evaluation", features = ["testing"] }
+andromeda-execute = { path = "../contracts/automation/andromeda-execute", features = ["testing"] }
+andromeda-oracle = { path = "../contracts/automation/andromeda-oracle", features = ["testing"] }
+andromeda-storage = { path = "../contracts/automation/andromeda-storage", features = ["testing"] }
+andromeda-task-balancer = { path = "../contracts/automation/andromeda-task-balancer", features = ["testing"] }
+
 #Other Crates
 common = { version = "0.1.0", path = "../packages/common" }
 andromeda-testing = { path = "../packages/andromeda-testing", features = ["testing"] }
@@ -45,6 +55,7 @@ cw721-base = { version = "0.16.0", features = ["library"] }
 cw721 = "0.16.0"
 cw20 = "1.0.0"
 cw20-base = "0.16.0"
+cw-utils = "1.0.0"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 cw-multi-test = { version = "0.16.0" }

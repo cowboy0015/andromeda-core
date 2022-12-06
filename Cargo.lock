@@ -142,6 +142,7 @@ dependencies = [
  "common",
  "cosmwasm-schema",
  "cosmwasm-std",
+ "cw-multi-test",
  "cw-storage-plus 1.0.0",
  "cw-utils 1.0.0",
  "cw2 1.0.0",
@@ -162,6 +163,7 @@ dependencies = [
  "common",
  "cosmwasm-schema",
  "cosmwasm-std",
+ "cw-multi-test",
  "cw-storage-plus 1.0.0",
  "cw-utils 1.0.0",
  "cw2 1.0.0",
@@ -206,7 +208,7 @@ dependencies = [
  "cw-storage-plus 1.0.0",
  "cw2 1.0.0",
  "cw20 1.0.0",
- "cw20-base",
+ "cw20-base 1.0.0",
  "schemars",
  "semver",
  "serde",
@@ -344,6 +346,7 @@ dependencies = [
  "common",
  "cosmwasm-schema",
  "cosmwasm-std",
+ "cw-multi-test",
  "cw-storage-plus 1.0.0",
  "cw-utils 1.0.0",
  "cw2 1.0.0",
@@ -363,6 +366,7 @@ dependencies = [
  "common",
  "cosmwasm-schema",
  "cosmwasm-std",
+ "cw-multi-test",
  "cw-storage-plus 1.0.0",
  "cw-utils 1.0.0",
  "cw2 1.0.0",
@@ -395,7 +399,7 @@ dependencies = [
  "cw-asset",
  "cw-utils 1.0.0",
  "cw20 1.0.0",
- "cw20-base",
+ "cw20-base 1.0.0",
  "schemars",
  "serde",
 ]
@@ -518,6 +522,7 @@ dependencies = [
  "common",
  "cosmwasm-schema",
  "cosmwasm-std",
+ "cw-multi-test",
  "cw-storage-plus 0.13.4",
  "cw-utils 0.13.4",
  "cw2 0.13.4",
@@ -650,6 +655,7 @@ dependencies = [
  "common",
  "cosmwasm-schema",
  "cosmwasm-std",
+ "cw-multi-test",
  "cw-storage-plus 1.0.0",
  "cw-utils 1.0.0",
  "cw2 1.0.0",
@@ -884,7 +890,7 @@ dependencies = [
  "cw1155",
  "cw1155-base",
  "cw20 1.0.0",
- "cw20-base",
+ "cw20-base 1.0.0",
  "cw721-base",
  "hex",
  "schemars",
@@ -1262,6 +1268,24 @@ dependencies = [
  "cw-utils 0.16.0",
  "schemars",
  "serde",
+]
+
+[[package]]
+name = "cw20-base"
+version = "0.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "61d826fa1084d026d0abdb54faa5956972efa3a9053473bfcefb5388960aab69"
+dependencies = [
+ "cosmwasm-schema",
+ "cosmwasm-std",
+ "cw-storage-plus 0.16.0",
+ "cw-utils 0.16.0",
+ "cw2 0.16.0",
+ "cw20 0.16.0",
+ "schemars",
+ "semver",
+ "serde",
+ "thiserror",
 ]
 
 [[package]]
@@ -1791,6 +1815,47 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-ident",
+]
+
+[[package]]
+name = "tests-integration"
+version = "0.1.0"
+dependencies = [
+ "andromeda-address-list",
+ "andromeda-app",
+ "andromeda-app-contract",
+ "andromeda-auction",
+ "andromeda-automation",
+ "andromeda-condition",
+ "andromeda-counter",
+ "andromeda-crowdfund",
+ "andromeda-cw20",
+ "andromeda-cw20-staking",
+ "andromeda-cw721",
+ "andromeda-ecosystem",
+ "andromeda-evaluation",
+ "andromeda-execute",
+ "andromeda-finance",
+ "andromeda-fungible-tokens",
+ "andromeda-marketplace",
+ "andromeda-modules",
+ "andromeda-non-fungible-tokens",
+ "andromeda-oracle",
+ "andromeda-rates",
+ "andromeda-splitter",
+ "andromeda-storage",
+ "andromeda-task-balancer",
+ "andromeda-testing",
+ "andromeda-vault",
+ "andromeda-wrapped-cw721",
+ "common",
+ "cosmwasm-std",
+ "cw-multi-test",
+ "cw-utils 1.0.0",
+ "cw20 1.0.0",
+ "cw20-base 0.16.0",
+ "cw721",
+ "cw721-base",
 ]
 
 [[package]]
