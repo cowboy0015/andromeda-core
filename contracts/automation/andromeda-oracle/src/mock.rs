@@ -1,8 +1,8 @@
 #![cfg(all(not(target_arch = "wasm32"), feature = "testing"))]
 
 use crate::contract::{execute, instantiate, query};
-use andromeda_automation::oracle::{ExecuteMsg, InstantiateMsg, QueryMsg, TypeOfResponse};
-use cosmwasm_std::{Binary, Empty, Uint128};
+use andromeda_automation::oracle::{InstantiateMsg, QueryMsg, RegularTypes, TypeOfResponse};
+use cosmwasm_std::{Binary, Empty};
 use cw_multi_test::{Contract, ContractWrapper};
 
 pub fn mock_andromeda_oracle() -> Box<dyn Contract<Empty>> {
@@ -17,10 +17,10 @@ pub fn mock_oracle_instantiate_msg(
     response_element: Option<String>,
 ) -> InstantiateMsg {
     InstantiateMsg {
-        target_address: todo!(),
-        message_binary: todo!(),
-        return_type: todo!(),
-        response_element: todo!(),
+        target_address,
+        message_binary,
+        return_type,
+        response_element,
     }
 }
 

@@ -12,7 +12,7 @@ pub fn mock_andromeda_evaluation() -> Box<dyn Contract<Empty>> {
 }
 
 pub fn mock_evaluation_instantiate_msg(
-    condition_address: AndrAddressm,
+    condition_address: AndrAddress,
     oracle_address: AndrAddress,
     task_balancer: AndrAddress,
     user_value: Option<Uint128>,

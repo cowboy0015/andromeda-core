@@ -71,6 +71,9 @@ name = "crowdfund_app"
 name = "auction_app"
 
 [[test]]
+name = "automation_app"
+
+[[test]]
 name = "cw20_staking_app"
 
 [[test]]
