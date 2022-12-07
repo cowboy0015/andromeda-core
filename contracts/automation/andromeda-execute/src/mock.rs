@@ -1,7 +1,7 @@
 #![cfg(all(not(target_arch = "wasm32"), feature = "testing"))]
 
 use crate::contract::{execute, instantiate, query};
-use andromeda_automation::execute::{ExecuteMsg, InstantiateMsg};
+use andromeda_automation::execute::{ExecuteMsg, InstantiateMsg, QueryMsg};
 use common::app::AndrAddress;
 use cosmwasm_std::{Binary, Empty};
 use cw_multi_test::{Contract, ContractWrapper};
@@ -27,4 +27,8 @@ pub fn mock_execute_instantiate_msg(
 
 pub fn mock_execute_msg() -> ExecuteMsg {
     ExecuteMsg::Execute {}
+}
+
+pub fn mock_execute_query_target_binary_msg() -> QueryMsg {
+    QueryMsg::TargetMessage {}
 }

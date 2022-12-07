@@ -553,24 +553,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "andromeda-process"
-version = "0.1.0"
-dependencies = [
- "ado-base",
- "andromeda-automation",
- "andromeda-testing",
- "common",
- "cosmwasm-schema",
- "cosmwasm-std",
- "cw-storage-plus 0.15.1",
- "cw2 0.15.1",
- "prost",
- "schemars",
- "semver",
- "serde",
-]
-
-[[package]]
 name = "andromeda-rate-limiting-withdrawals"
 version = "0.1.0"
 dependencies = [

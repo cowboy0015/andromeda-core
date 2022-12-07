@@ -134,12 +134,12 @@ fn execute_target(deps: DepsMut, _env: Env, info: MessageInfo) -> Result<Respons
 
     // Load the stored Target Message
     let stored_msg = TARGET_MSG.load(deps.storage)?;
-    let msg: Binary = from_binary(&stored_msg)?;
+    println!("Execute's stored message: {:?}", stored_msg);
 
     Ok(Response::new().add_submessage(SubMsg::reply_on_error(
         CosmosMsg::Wasm(WasmMsg::Execute {
             contract_addr,
-            msg: to_binary(&msg)?,
+            msg: stored_msg,
             funds: vec![],
         }),
         REMOVE_PROCESS_REPLY_ID,
@@ -210,10 +210,9 @@ fn query_task_balancer(deps: Deps) -> Result<String, ContractError> {
     Ok(address.to_string())
 }
 
-fn query_target_message(deps: Deps) -> Result<String, ContractError> {
+fn query_target_message(deps: Deps) -> Result<Binary, ContractError> {
     let binary_message = TARGET_MSG.load(deps.storage)?;
-    let decoded_message: String = from_binary(&binary_message)?;
-    Ok(decoded_message)
+    Ok(binary_message)
 }
 
 #[cfg(test)]

@@ -1,7 +1,7 @@
 #![cfg(all(not(target_arch = "wasm32"), feature = "testing"))]
 
 use crate::contract::{execute, instantiate, query};
-use andromeda_automation::counter::{ExecuteMsg, InstantiateMsg};
+use andromeda_automation::counter::{ExecuteMsg, InstantiateMsg, QueryMsg};
 use common::app::AndrAddress;
 use cosmwasm_std::Empty;
 use cw_multi_test::{Contract, ContractWrapper};
@@ -25,4 +25,8 @@ pub fn mock_counter_increment_two_msg() -> ExecuteMsg {
 
 pub fn mock_counter_reset_msg() -> ExecuteMsg {
     ExecuteMsg::Reset {}
+}
+
+pub fn mock_counter_current_count_msg() -> QueryMsg {
+    QueryMsg::CurrentCount {}
 }

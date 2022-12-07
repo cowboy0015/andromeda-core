@@ -35,7 +35,10 @@ pub fn instantiate(
 ) -> Result<Response, ContractError> {
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
     QUERY_MSG.save(deps.storage, &msg.message_binary)?;
-    TARGET_ADO_ADDRESS.save(deps.storage, &msg.target_address)?;
+
+    // Validate target address
+    let validated_target_address = deps.api.addr_validate(&msg.target_address)?;
+    TARGET_ADO_ADDRESS.save(deps.storage, &validated_target_address.to_string())?;
 
     if let Some(response_element) = msg.response_element {
         RESPONSE_ELEMENT.save(deps.storage, &response_element)?;

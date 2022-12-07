@@ -27,3 +27,7 @@ pub fn mock_oracle_instantiate_msg(
 pub fn mock_oracle_msg() -> QueryMsg {
     QueryMsg::Target {}
 }
+
+pub fn mock_oracle_current_target_msg() -> QueryMsg {
+    QueryMsg::CurrentTarget {}
+}

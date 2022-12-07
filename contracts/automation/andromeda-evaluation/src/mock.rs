@@ -1,7 +1,7 @@
 #![cfg(all(not(target_arch = "wasm32"), feature = "testing"))]
 
 use crate::contract::{execute, instantiate, query};
-use andromeda_automation::evaluation::{ExecuteMsg, InstantiateMsg, Operators, QueryMsg};
+use andromeda_automation::evaluation::{InstantiateMsg, Operators, QueryMsg};
 use common::app::AndrAddress;
 use cosmwasm_std::{Empty, Uint128};
 use cw_multi_test::{Contract, ContractWrapper};

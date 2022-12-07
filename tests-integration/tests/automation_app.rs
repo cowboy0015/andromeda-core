@@ -1,21 +1,21 @@
-use std::str::FromStr;
-
 use andromeda_app::app::AppComponent;
 use andromeda_app_contract::mock::{
-    mock_andromeda_process, mock_claim_ownership_msg, mock_get_address_msg,
+    mock_andromeda_process, mock_claim_ownership_msg, mock_fire_msg, mock_get_address_msg,
     mock_get_components_msg, mock_process_instantiate_msg,
 };
 use andromeda_automation::{
     condition::LogicGate,
+    counter::ExecuteMsg as CounterExecuteMsg,
     evaluation::Operators,
     oracle::{RegularTypes, TypeOfResponse},
 };
 use andromeda_condition::mock::{
     mock_andromeda_condition, mock_condition_get_results_msg, mock_condition_instantiate_msg,
+    mock_condition_logic_gate_msg,
 };
 use andromeda_counter::mock::{
-    mock_andromeda_counter, mock_counter_increment_one_msg, mock_counter_increment_two_msg,
-    mock_counter_instantiate_msg,
+    mock_andromeda_counter, mock_counter_current_count_msg, mock_counter_increment_one_msg,
+    mock_counter_increment_two_msg, mock_counter_instantiate_msg, mock_counter_reset_msg,
 };
 
 use andromeda_evaluation::mock::{
@@ -24,8 +24,12 @@ use andromeda_evaluation::mock::{
 
 use andromeda_execute::mock::{
     mock_andromeda_execute, mock_execute_instantiate_msg, mock_execute_msg,
+    mock_execute_query_target_binary_msg,
 };
-use andromeda_oracle::mock::{mock_andromeda_oracle, mock_oracle_instantiate_msg, mock_oracle_msg};
+use andromeda_oracle::mock::{
+    mock_andromeda_oracle, mock_oracle_current_target_msg, mock_oracle_instantiate_msg,
+    mock_oracle_msg,
+};
 use andromeda_storage::mock::{
     mock_andromeda_storage, mock_storage_instantiate_msg, mock_storage_remove_msg,
     mock_storage_store_msg,
@@ -40,7 +44,7 @@ use common::{
     ado_base::recipient::{ADORecipient, Recipient},
     app::AndrAddress,
 };
-use cosmwasm_std::{coin, to_binary, Addr, BlockInfo, Coin, Decimal, Uint128};
+use cosmwasm_std::{coin, from_binary, to_binary, Addr, Binary, BlockInfo, Coin, Decimal, Uint128};
 use cw_multi_test::{App, Executor};
 use cw_utils::Expiration;
 
@@ -110,14 +114,19 @@ fn test_automatiom_app() {
     let increment_two = to_binary(&"eyJpbmNyZW1lbnRfdHdvIjp7fX0=".to_string()).unwrap();
     let reset = to_binary(&"eyJyZXNldCI6e319".to_string()).unwrap();
     let query_count = to_binary(&"eyJjb3VudCI6e319".to_string()).unwrap();
+    let query_current_count = to_binary(&"eyJjdXJyZW50X2NvdW50Ijp7fX0=".to_string()).unwrap();
     let addr_task_balancer = Addr::unchecked("task_balancer");
     let addr_process = Addr::unchecked("process");
 
     // Condition ADO
     let condition_init_msg = mock_condition_instantiate_msg(
-        LogicGate::And,
-        vec![evaluation_andr_address],
-        execute_andr_address.clone(),
+        LogicGate::Not,
+        vec![AndrAddress {
+            identifier: "contract8".to_string(),
+        }],
+        AndrAddress {
+            identifier: "contract5".to_string(),
+        },
     );
     let condition_app_component = AppComponent {
         name: "1".to_string(),
@@ -126,7 +135,9 @@ fn test_automatiom_app() {
     };
 
     // Counter ADO
-    let counter_init_msg = mock_counter_instantiate_msg(vec![execute_andr_address]);
+    let counter_init_msg = mock_counter_instantiate_msg(vec![AndrAddress {
+        identifier: "contract5".to_string(),
+    }]);
     let counter_app_component = AppComponent {
         name: "2".to_string(),
         ado_type: "counter".to_string(),
@@ -135,8 +146,12 @@ fn test_automatiom_app() {
 
     // Evaluation ADO
     let evaluation_init_msg = mock_evaluation_instantiate_msg(
-        condition_andr_address.clone(),
-        oracle_andr_address,
+        AndrAddress {
+            identifier: "contract7".to_string(),
+        },
+        AndrAddress {
+            identifier: "contract3".to_string(),
+        },
         task_balancer_andr_address.clone(),
         Some(Uint128::new(1)),
         Operators::Equal,
@@ -150,10 +165,14 @@ fn test_automatiom_app() {
 
     // Execute ADO that increments by one
     let execute_init_msg = mock_execute_instantiate_msg(
-        counter_andr_address.clone(),
-        condition_andr_address.clone(),
-        task_balancer_andr_address.identifier,
-        increment_one,
+        AndrAddress {
+            identifier: "contract4".to_string(),
+        },
+        AndrAddress {
+            identifier: "contract7".to_string(),
+        },
+        "contract9".to_string(),
+        to_binary(&CounterExecuteMsg::IncrementOne {}).unwrap(),
     );
 
     let execute_app_component = AppComponent {
@@ -165,8 +184,8 @@ fn test_automatiom_app() {
     // Oracle ADO
 
     let oracle_init_msg = mock_oracle_instantiate_msg(
-        counter_andr_address.identifier,
-        query_count,
+        "contract4".to_string(),
+        query_current_count,
         TypeOfResponse::RegularType(RegularTypes::Uint128),
         None,
     );
@@ -200,19 +219,19 @@ fn test_automatiom_app() {
     // Process ADO
 
     let process_components = vec![
-        oracle_app_component,
-        counter_app_component,
-        execute_app_component,
-        storage_app_component,
-        condition_app_component,
-        evaluation_app_component,
-        task_balancer_app_component,
+        oracle_app_component.clone(),
+        counter_app_component.clone(),
+        execute_app_component.clone(),
+        storage_app_component.clone(),
+        condition_app_component.clone(),
+        evaluation_app_component.clone(),
+        task_balancer_app_component.clone(),
     ];
     let process_init_msg = mock_process_instantiate_msg(
         "Pro".to_string(),
         process_components.clone(),
         andr.registry_address.to_string(),
-        vec![condition_andr_address.identifier],
+        vec!["contract7".to_string()],
     );
 
     let process_addr = router
@@ -225,6 +244,7 @@ fn test_automatiom_app() {
             Some(owner.to_string()),
         )
         .unwrap();
+    println!("Process address is: {:?}", process_addr);
 
     let components: Vec<AppComponent> = router
         .wrap()
@@ -233,35 +253,231 @@ fn test_automatiom_app() {
 
     assert_eq!(components, process_components);
 
+    router
+        .execute_contract(
+            owner.clone(),
+            process_addr.clone(),
+            &mock_claim_ownership_msg(None),
+            &[],
+        )
+        .unwrap();
+
+    let condition_addr: String = router
+        .wrap()
+        .query_wasm_smart(
+            process_addr.clone(),
+            &mock_get_address_msg(condition_app_component.name),
+        )
+        .unwrap();
+    println!("Conidtion address is: {:?}", condition_addr);
+
+    let counter_addr: String = router
+        .wrap()
+        .query_wasm_smart(
+            process_addr.clone(),
+            &mock_get_address_msg(counter_app_component.name),
+        )
+        .unwrap();
+    println!("Counter address is: {:?}", counter_addr);
+
+    let evaluation_addr: String = router
+        .wrap()
+        .query_wasm_smart(
+            process_addr.clone(),
+            &mock_get_address_msg(evaluation_app_component.name),
+        )
+        .unwrap();
+
+    println!("Evaluation address is: {:?}", evaluation_addr);
+
+    let execute_addr: String = router
+        .wrap()
+        .query_wasm_smart(
+            process_addr.clone(),
+            &mock_get_address_msg(execute_app_component.name),
+        )
+        .unwrap();
+
+    println!("Execute address is: {:?}", execute_addr);
+
+    let oracle_addr: String = router
+        .wrap()
+        .query_wasm_smart(
+            process_addr.clone(),
+            &mock_get_address_msg(oracle_app_component.name),
+        )
+        .unwrap();
+    println!("Oracle address is: {:?}", oracle_addr);
+
+    let storage_addr: String = router
+        .wrap()
+        .query_wasm_smart(
+            process_addr.clone(),
+            &mock_get_address_msg(storage_app_component.name),
+        )
+        .unwrap();
+    println!("Storage address is: {:?}", storage_addr);
+
+    let task_balancer_addr: String = router
+        .wrap()
+        .query_wasm_smart(
+            process_addr.clone(),
+            &mock_get_address_msg(task_balancer_app_component.name),
+        )
+        .unwrap();
+    println!("Task Balancer address is: {:?}", task_balancer_addr);
+
+    // // Call the fire function
+
+    // let fire_msg = mock_fire_msg();
     // router
     //     .execute_contract(
     //         owner.clone(),
-    //         app_addr.clone(),
-    //         &mock_claim_ownership_msg(None),
+    //         Addr::unchecked("contract2".to_string()),
+    //         &fire_msg,
     //         &[],
     //     )
     //     .unwrap();
 
-    // let crowdfund_addr: String = router
-    //     .wrap()
-    //     .query_wasm_smart(
-    //         app_addr.clone(),
-    //         &mock_get_address_msg(crowdfund_app_component.name),
-    //     )
-    //     .unwrap();
+    // Check if the counter's count is equal to 0
 
-    // // Mint Tokens
-    // let mint_msg = mock_crowdfund_quick_mint_msg(5, owner.to_string());
-    // router
-    //     .execute_contract(
-    //         owner.clone(),
-    //         Addr::unchecked(crowdfund_addr.clone()),
-    //         &mint_msg,
-    //         &[],
-    //     )
-    //     .unwrap();
+    let current_count_query_msg = mock_counter_current_count_msg();
 
-    // // Start Sale
+    let count: Uint128 = router
+        .wrap()
+        .query_wasm_smart(counter_addr.clone(), &current_count_query_msg)
+        .unwrap();
+
+    assert_eq!(count, Uint128::zero());
+
+    let incremnet_msg = mock_counter_increment_one_msg();
+    router
+        .execute_contract(
+            Addr::unchecked("contract5".to_string()),
+            Addr::unchecked(counter_addr.clone()),
+            &incremnet_msg,
+            &[],
+        )
+        .unwrap();
+    // Check if counter incremented to 1
+
+    let count: Uint128 = router
+        .wrap()
+        .query_wasm_smart(counter_addr.clone(), &current_count_query_msg)
+        .unwrap();
+
+    assert_eq!(count, Uint128::new(1));
+
+    // Reset count
+    let reset_msg = mock_counter_reset_msg();
+
+    router
+        .execute_contract(
+            Addr::unchecked("contract5".to_string()),
+            Addr::unchecked(counter_addr.clone()),
+            &reset_msg,
+            &[],
+        )
+        .unwrap();
+    let count: Uint128 = router
+        .wrap()
+        .query_wasm_smart(counter_addr.clone(), &current_count_query_msg)
+        .unwrap();
+
+    assert_eq!(count, Uint128::zero());
+
+    // Check if oracle is querying correcly
+
+    let oracle_msg = mock_oracle_msg();
+    let oracle_current_target_msg = mock_oracle_current_target_msg();
+
+    let current_target_response: String = router
+        .wrap()
+        .query_wasm_smart(oracle_addr.clone(), &oracle_current_target_msg)
+        .unwrap();
+    println!("target response: {:?}", current_target_response);
+
+    // Check if eval is working correctly
+
+    let eval_msg = mock_evaluation_msg();
+
+    let evaluation: bool = router
+        .wrap()
+        .query_wasm_smart(evaluation_addr.clone(), &eval_msg)
+        .unwrap();
+
+    // Count is 0, user value is 1 and the comparison is Equal so it should return false
+    assert_eq!(evaluation, false);
+
+    // Check if execute is working correctly
+
+    let execute_msg = mock_execute_msg();
+    let execute_query_target_binary_message = mock_execute_query_target_binary_msg();
+
+    let target_binary_message: Binary = router
+        .wrap()
+        .query_wasm_smart(execute_addr.clone(), &execute_query_target_binary_message)
+        .unwrap();
+    println!("The binary message is: {:?}", target_binary_message);
+
+    router
+        .execute_contract(
+            Addr::unchecked("contract7".to_string()),
+            Addr::unchecked("contract5".to_string()),
+            &execute_msg,
+            &[],
+        )
+        .unwrap();
+
+    // Check if condition is working correctly
+
+    let condition_msg = mock_condition_get_results_msg();
+    let condition_logic_gate_msg = mock_condition_logic_gate_msg();
+
+    let condition_logic_gate: LogicGate = router
+        .wrap()
+        .query_wasm_smart(condition_addr.clone(), &condition_logic_gate_msg)
+        .unwrap();
+    assert_eq!(condition_logic_gate, LogicGate::Not);
+
+    let reset_msg = mock_counter_reset_msg();
+
+    // Reset count before launching condition
+    router
+        .execute_contract(
+            Addr::unchecked("contract5".to_string()),
+            Addr::unchecked(counter_addr.clone()),
+            &reset_msg,
+            &[],
+        )
+        .unwrap();
+
+    let count: Uint128 = router
+        .wrap()
+        .query_wasm_smart(counter_addr.clone(), &current_count_query_msg)
+        .unwrap();
+
+    assert_eq!(count, Uint128::new(0));
+
+    router
+        .execute_contract(
+            owner.clone(),
+            Addr::unchecked(condition_addr),
+            &condition_msg,
+            &[],
+        )
+        .unwrap();
+
+    // Check if counter incremented to 1
+
+    let count: Uint128 = router
+        .wrap()
+        .query_wasm_smart(counter_addr.clone(), &current_count_query_msg)
+        .unwrap();
+
+    assert_eq!(count, Uint128::new(1));
+
+    // Start Sale
     // let token_price = coin(100, "uandr");
     // let sale_recipient = Recipient::ADO(ADORecipient {
     //     address: AndrAddress {

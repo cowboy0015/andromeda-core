@@ -6,14 +6,13 @@ use andromeda_automation::evaluation::{
     ExecuteMsg, InstantiateMsg, MigrateMsg, Operators, QueryMsg,
 };
 use andromeda_automation::oracle::QueryMsg as OracleQueryMsg;
-use andromeda_automation::task_balancer::ExecuteMsg::Remove;
 use common::{
     ado_base::InstantiateMsg as BaseInstantiateMsg, app::AndrAddress, encode_binary,
     error::ContractError,
 };
 use cosmwasm_std::{
-    ensure, entry_point, to_binary, Binary, CosmosMsg, Deps, DepsMut, Env, MessageInfo,
-    QueryRequest, Reply, Response, StdError, SubMsg, Uint128, WasmMsg, WasmQuery,
+    ensure, entry_point, to_binary, Binary, Deps, DepsMut, Env, MessageInfo, QueryRequest,
+    Response, StdError, Uint128, WasmQuery,
 };
 use cw2::{get_contract_version, set_contract_version};
 use cw_utils::nonpayable;
@@ -61,30 +60,30 @@ pub fn instantiate(
     )
 }
 
-#[cfg_attr(not(feature = "library"), entry_point)]
-pub fn reply(deps: DepsMut, _env: Env, reply: Reply) -> Result<Response, ContractError> {
-    // Load task balancer's address
-    let contract_addr = TASK_BALANCER_ADDRESS.load(deps.storage)?;
-    let app_contract = ADOContract::default().get_app_contract(deps.storage)?;
-    let contract_addr = contract_addr.get_address(deps.api, &deps.querier, app_contract.clone())?;
-    if let Some(app_address) = app_contract {
-        match reply.id {
-            // this represents the id of the Execute error which requires removal of the entire process
-            1 => Ok(Response::new().add_submessage(SubMsg::new(CosmosMsg::Wasm(
-                WasmMsg::Execute {
-                    contract_addr,
-                    msg: to_binary(&Remove {
-                        process: app_address.into_string(),
-                    })?,
-                    funds: vec![],
-                },
-            )))),
-            _ => Err(ContractError::AccountNotFound {}),
-        }
-    } else {
-        Err(ContractError::AccountNotFound {})
-    }
-}
+// #[cfg_attr(not(feature = "library"), entry_point)]
+// pub fn reply(deps: DepsMut, _env: Env, reply: Reply) -> Result<Response, ContractError> {
+//     // Load task balancer's address
+//     let contract_addr = TASK_BALANCER_ADDRESS.load(deps.storage)?;
+//     let app_contract = ADOContract::default().get_app_contract(deps.storage)?;
+//     let contract_addr = contract_addr.get_address(deps.api, &deps.querier, app_contract.clone())?;
+//     if let Some(app_address) = app_contract {
+//         match reply.id {
+//             // this represents the id of the Execute error which requires removal of the entire process
+//             1 => Ok(Response::new().add_submessage(SubMsg::new(CosmosMsg::Wasm(
+//                 WasmMsg::Execute {
+//                     contract_addr,
+//                     msg: to_binary(&Remove {
+//                         process: app_address.into_string(),
+//                     })?,
+//                     funds: vec![],
+//                 },
+//             )))),
+//             _ => Err(ContractError::AccountNotFound {}),
+//         }
+//     } else {
+//         Err(ContractError::AccountNotFound {})
+//     }
+// }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
