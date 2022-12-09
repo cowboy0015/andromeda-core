@@ -543,23 +543,40 @@ fn test_fire_condition_works() {
         TARGET_ADOS.load(&deps.storage).unwrap(),
         Some(vec!["condition1".to_string(), "condition2".to_string()])
     );
+
+    let msg = ExecuteMsg::UpdateAddress {
+        name: "condition1".to_string(),
+        addr: "condition1address".to_string(),
+    };
+
+    execute(deps.as_mut(), mock_env(), info.clone(), msg).unwrap();
+
+    let msg = ExecuteMsg::UpdateAddress {
+        name: "condition2".to_string(),
+        addr: "condition2address".to_string(),
+    };
+
+    execute(deps.as_mut(), mock_env(), info.clone(), msg).unwrap();
+
+    let ado_address = ADO_ADDRESSES.load(&deps.storage, "condition1").unwrap();
+    println!("ADO address 1: {:?}", ado_address);
     let msg = ExecuteMsg::Fire {};
     let res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
     println!("{:?}", res);
 
     let expected_res = Response::new()
         .add_submessage(SubMsg::new(CosmosMsg::Wasm(WasmMsg::Execute {
-            contract_addr: "".to_string(),
+            contract_addr: "condition1address".to_string(),
             msg: encode_binary(&ConditionExecuteMsg::GetResults {}).unwrap(),
             funds: vec![],
         })))
         .add_submessage(SubMsg::new(CosmosMsg::Wasm(WasmMsg::Execute {
-            contract_addr: "".to_string(),
+            contract_addr: "condition2address".to_string(),
             msg: encode_binary(&ConditionExecuteMsg::GetResults {}).unwrap(),
             funds: vec![],
         })))
-        .add_attribute("address", "".to_string())
-        .add_attribute("address", "".to_string())
+        .add_attribute("address", "condition1address".to_string())
+        .add_attribute("address", "condition2address".to_string())
         .add_attribute("action", "fire_ado");
     assert_eq!(res, expected_res);
 }

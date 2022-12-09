@@ -9,8 +9,8 @@ use common::{
 use std::env;
 
 use cosmwasm_std::{
-    ensure, entry_point, from_binary, to_binary, Binary, CosmosMsg, Deps, DepsMut, Env,
-    MessageInfo, Reply, Response, StdError, SubMsg, WasmMsg,
+    ensure, entry_point, to_binary, Binary, CosmosMsg, Deps, DepsMut, Env, MessageInfo, Reply,
+    Response, StdError, SubMsg, WasmMsg,
 };
 use cw2::{get_contract_version, set_contract_version};
 use cw_utils::nonpayable;
@@ -220,6 +220,7 @@ mod tests {
     use super::*;
     use andromeda_automation::counter::ExecuteMsg::IncrementOne;
     use common::app::AndrAddress;
+    use cosmwasm_std::from_binary;
     use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
 
     #[test]

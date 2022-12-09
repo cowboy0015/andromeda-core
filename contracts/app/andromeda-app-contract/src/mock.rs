@@ -47,6 +47,10 @@ pub fn mock_claim_ownership_msg(component_name: Option<String>) -> ExecuteMsg {
     }
 }
 
+pub fn mock_update_address_msg(name: String, addr: String) -> ExecuteMsg {
+    ExecuteMsg::UpdateAddress { name, addr }
+}
+
 pub fn mock_fire_msg() -> ExecuteMsg {
     ExecuteMsg::Fire {}
 }

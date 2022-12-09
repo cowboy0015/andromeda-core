@@ -140,6 +140,7 @@ fn execute_fire(deps: DepsMut, _env: Env, info: MessageInfo) -> Result<Response,
         }
     }
 
+    println!("The contract addresses are: {:?}", contract_addrs);
     // collect SubMsgs for each contract
     let mut sub_msgs: Vec<SubMsg> = Vec::new();
 
