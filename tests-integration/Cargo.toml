@@ -51,6 +51,7 @@ andromeda-testing = { path = "../packages/andromeda-testing", features = ["testi
 
 #Cosmwasm Crates
 cosmwasm-std = "1.1.8"
+getrandom = { version = "0.2", features = ["js"] }
 cw721-base = { version = "0.16.0", features = ["library"] }
 cw721 = "0.16.0"
 cw20 = "1.0.0"

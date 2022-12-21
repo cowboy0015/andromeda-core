@@ -17,6 +17,7 @@ library = []
 
 [dependencies]
 cosmwasm-std = "1.1.8"
+getrandom = { version = "0.2", features = ["js"] }
 cosmwasm-schema = "1.1.8"
 cw-storage-plus = "1.0.0"
 schemars = "0.8.11"

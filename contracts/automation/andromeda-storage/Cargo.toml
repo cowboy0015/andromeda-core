@@ -8,6 +8,7 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 cosmwasm-std = "1.1.4"
+getrandom = { version = "0.2", features = ["js"] }
 cosmwasm-schema = "1.1.4"
 serde = { version = "1.0.148", default-features = false, features = ["derive"] }
 schemars = "0.8.11"
