@@ -15,7 +15,6 @@ cw2 = "0.13.4"
 cw20 = "0.13.4"
 cw-utils = "0.13.4"
 semver = "1"
-serde_json = { git = "https://github.com/joemonem/serde_json_cosmwasm.git", rev = "168e0aa" }
 serde-json-value-wasm = { git = "https://github.com/chris-ricketts/serde-json-value-wasm" }
 getrandom = { version = "0.2", features = ["js"] }
 

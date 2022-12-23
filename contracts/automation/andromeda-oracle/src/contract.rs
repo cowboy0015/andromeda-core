@@ -13,8 +13,8 @@ use cosmwasm_std::{
     ensure, entry_point, from_binary, to_binary, Binary, Deps, DepsMut, Env, MessageInfo,
     QueryRequest, Reply, Response, StdError, Uint128, WasmQuery,
 };
-use serde_json::from_slice;
-use serde_json_value_wasm::Value;
+use schemars::_serde_json::from_slice;
+use serde_json_value_wasm::*;
 
 use std::env;
 
@@ -34,7 +34,8 @@ pub fn instantiate(
     msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
-    QUERY_MSG.save(deps.storage, &msg.message_binary)?;
+    let binary_message = to_binary(&msg.message_binary)?;
+    QUERY_MSG.save(deps.storage, &binary_message)?;
 
     // Validate target address
     let validated_target_address = deps.api.addr_validate(&msg.target_address)?;
@@ -235,7 +236,7 @@ mod tests {
         let user_value = "count".to_string();
 
         let binary = to_binary(&query_response).unwrap();
-        let json_value: Value = serde_json::from_slice(&binary).unwrap();
+        let json_value: Value = from_slice(&binary).unwrap();
         println!("The JSON value as object is: {:?}", json_value.as_object());
 
         let json_map: String = match json_value.as_object() {
@@ -349,14 +350,16 @@ mod tests {
     fn test_counter_response_count() {
         let mut deps = mock_dependencies_custom(&[]);
         let target_address = MOCK_RESPONSE_COUNTER_CONTRACT.to_string();
+        let message_binary = to_binary("eyJjb3VudCI6e319").unwrap();
 
         let msg = InstantiateMsg {
             target_address,
             // Count msg
-            message_binary: to_binary("eyJjb3VudCI6e319").unwrap(),
+            message_binary: message_binary.clone(),
             return_type: TypeOfResponse::CustomType(CustomTypes::CounterResponse),
             response_element: Some("count".to_string()),
         };
+        println!("message_binary during instantiation: {:?}", message_binary);
         let info = mock_info("creator", &[]);
 
         // we can just call .unwrap() to assert this was a success
