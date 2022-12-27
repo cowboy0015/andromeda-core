@@ -35,6 +35,7 @@ pub fn instantiate(
 ) -> Result<Response, ContractError> {
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
     let binary_message = to_binary(&msg.message_binary)?;
+    let binary_message = from_binary(&binary_message)?;
     QUERY_MSG.save(deps.storage, &binary_message)?;
 
     // Validate target address
