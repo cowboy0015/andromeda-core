@@ -5,7 +5,14 @@ use crate::{
     error::ContractError,
 };
 use cosmwasm_std::{ensure, Deps, Env, MessageInfo, Order, Response, Storage};
+#[cfg(all(feature = "vanilla", not(feature = "secret")))]
+use cosmwasm_std::{ensure, Deps, Env, MessageInfo, Order, Response, Storage};
+#[cfg(all(feature = "vanilla", not(feature = "secret")))]
 use cw_storage_plus::{Bound, Index, IndexList, IndexedMap, MultiIndex};
+#[cfg(feature = "secret")]
+use secret_std::{ensure, Deps, Env, MessageInfo, Order, Response, Storage};
+#[cfg(feature = "secret")]
+use secret_toolkit::storage::{Bound, Index, IndexList, IndexedMap, MultiIndex};
 
 use super::ADOContract;
 
@@ -284,6 +291,7 @@ impl<'a> ADOContract<'a> {
     }
 
     /// Queries all permissions for a given actor
+    #[cfg(all(feature = "vanilla", not(feature = "secret")))]
     pub fn query_permissions(
         &self,
         deps: Deps,
@@ -305,10 +313,21 @@ impl<'a> ADOContract<'a> {
         Ok(permissions)
     }
 
+    #[cfg(all(feature = "vanilla", not(feature = "secret")))]
     pub fn query_permissioned_actions(&self, deps: Deps) -> Result<Vec<String>, ContractError> {
         let actions = self
             .permissioned_actions
             .keys(deps.storage, None, None, Order::Ascending)
+            .map(|p| p.unwrap())
+            .collect::<Vec<String>>();
+        Ok(actions)
+    }
+
+    #[cfg(feature = "secret")]
+    pub fn query_permissioned_actions(&self, deps: Deps) -> Result<Vec<String>, ContractError> {
+        let actions = self
+            .permissioned_actions
+            .paging_keys(deps.storage, None, None, Order::Ascending)
             .map(|p| p.unwrap())
             .collect::<Vec<String>>();
         Ok(actions)
