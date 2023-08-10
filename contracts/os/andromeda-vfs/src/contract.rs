@@ -70,7 +70,6 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     let execute_env = ExecuteEnv { deps, env, info };
-
     match msg {
         ExecuteMsg::AddPath { name, address } => execute_add_path(execute_env, name, address),
         ExecuteMsg::RegisterUser { username } => execute_register_user(execute_env, username),
@@ -101,7 +100,18 @@ fn execute_add_parent_path(
     name: String,
     parent_address: Addr,
 ) -> Result<Response, ContractError> {
-    // validate_component_name(name.clone())?;
+    validate_component_name(name.clone())?;
+
+    // Add Parent path will most likely be used by app contracts to register itself so prevent
+    // any external calls to override this path. This helps preventing corrupt paths for like minter address, etc
+    let sender_info = execute_env
+        .deps
+        .querier
+        .query_wasm_contract_info(execute_env.info.sender.as_ref())?;
+    ensure!(
+        sender_info.creator == parent_address,
+        ContractError::Unauthorized {}
+    );
     add_pathname(
         execute_env.deps.storage,
         parent_address,

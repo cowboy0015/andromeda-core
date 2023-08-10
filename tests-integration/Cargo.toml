@@ -54,7 +54,7 @@ andromeda-splitter = { path = "../contracts/finance/andromeda-splitter", feature
 # #OS
 # andromeda-kernel = { path = "../contracts/os/andromeda-kernel", features = ["testing"] }
 # andromeda-adodb = { path = "../contracts/os/andromeda-adodb", features = ["testing"] }
-# andromeda-vfs = { path = "../contracts/os/andromeda-vfs", features = ["testing"]}
+andromeda-vfs = { path = "../contracts/os/andromeda-vfs", features = ["testing"]}
 
 
 

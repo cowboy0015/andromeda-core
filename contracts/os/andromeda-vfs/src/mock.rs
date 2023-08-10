@@ -33,6 +33,13 @@ pub fn mock_add_path(name: impl Into<String>, address: Addr) -> ExecuteMsg {
     }
 }
 
+pub fn mock_vfs_add_parent_path(name: impl Into<String>, parent_address: Addr) -> ExecuteMsg {
+    ExecuteMsg::AddParentPath {
+        name: name.into(),
+        parent_address,
+    }
+}
+
 pub fn mock_resolve_path_query(path: impl Into<String>) -> QueryMsg {
     QueryMsg::ResolvePath { path: path.into() }
 }

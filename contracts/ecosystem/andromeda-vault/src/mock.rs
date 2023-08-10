@@ -26,6 +26,11 @@ pub fn mock_vault_deposit_msg(recipient: Option<AndrAddr>, msg: Option<Binary>) 
     ExecuteMsg::Deposit { recipient, msg }
 }
 
+/// Used to generate a deposit message for a vault
+pub fn mock_vault_strategy_msg(address: AndrAddr, strategy: StrategyType) -> ExecuteMsg {
+    ExecuteMsg::UpdateStrategy { strategy, address }
+}
+
 pub fn mock_vault_get_balance(
     address: AndrAddr,
     denom: Option<String>,

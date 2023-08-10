@@ -21,6 +21,7 @@ pub const ADMIN_USERNAME: &str = "am";
 pub struct MockAndromeda {
     pub admin_address: Addr,
     pub adodb_address: Addr,
+    pub vfs_address: Addr,
     pub kernel_address: Addr,
 }
 
@@ -115,6 +116,7 @@ impl MockAndromeda {
             adodb_address: adodb_address.clone(),
             admin_address: admin_address.clone(),
             kernel_address,
+            vfs_address: vfs_address.clone(),
         };
 
         mock_andr.register_kernel_key_address(app, "adodb", adodb_address);
