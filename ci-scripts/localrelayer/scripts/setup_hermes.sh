@@ -42,14 +42,14 @@ add_keys(){
 create_channel(){
     echo "🥱 Waiting for $CHAIN_A_ID to start"
     COUNTER=0
-    until $(curl --output /dev/null --silent --head --fail http://$CHAIN_A_ID:26657/status); do
+    until $(curl --output /dev/null --silent --head --fail http://54.87.129.200:26657/status); do
         printf '.'
         sleep 2
     done
 
     echo "🥱 Waiting for $CHAIN_B_ID to start"
     COUNTER=0
-    until $(curl --output /dev/null --silent --head --fail http://$CHAIN_B_ID:26657/status); do
+    until $(curl --output /dev/null --silent --head --fail http://54.87.129.200:36657/status); do
         printf '.'
         sleep 5
     done
