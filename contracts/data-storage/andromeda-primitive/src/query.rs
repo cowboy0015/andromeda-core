@@ -1,7 +1,11 @@
 use crate::state::{DATA, DEFAULT_KEY, KEY_OWNER, RESTRICTION};
 use andromeda_data_storage::primitive::{GetValueResponse, PrimitiveRestriction};
 use andromeda_std::{ado_contract::ADOContract, amp::AndrAddr, error::ContractError};
-use cosmwasm_std::{Addr, Deps, Storage};
+use cosmwasm_std::{Addr, Deps, StdResult, Storage};
+use cw_storage_plus::Bound;
+
+const DEFAULT_LIMIT: u32 = 10;
+const MAX_LIMIT: u32 = 100;
 
 pub fn get_key_or_default(name: &Option<String>) -> &str {
     match name {
@@ -27,19 +31,35 @@ pub fn has_key_permission(
     Ok(is_operator || allowed)
 }
 
-pub fn all_keys(storage: &dyn Storage) -> Result<Vec<String>, ContractError> {
-    let keys = DATA
-        .keys(storage, None, None, cosmwasm_std::Order::Ascending)
-        .map(|key| key.unwrap())
+pub fn all_keys(
+    storage: &dyn Storage,
+    start_after: Option<String>,
+    limit: Option<u32>,
+) -> Result<Vec<String>, ContractError> {
+    let limit = limit.unwrap_or(DEFAULT_LIMIT).min(MAX_LIMIT) as usize;
+    let start = start_after.map(|s| Bound::ExclusiveRaw(s.into()));
+
+    let keys: StdResult<Vec<String>> = DATA
+        .keys(storage, start, None, cosmwasm_std::Order::Ascending)
+        .take(limit)
         .collect();
-    Ok(keys)
+    Ok(keys?)
 }
 
-pub fn owner_keys(deps: &Deps, owner: AndrAddr) -> Result<Vec<String>, ContractError> {
+pub fn owner_keys(
+    deps: &Deps,
+    owner: AndrAddr,
+    start_after: Option<String>,
+    limit: Option<u32>,
+) -> Result<Vec<String>, ContractError> {
     let owner = owner.get_raw_address(deps)?;
+    let limit = limit.unwrap_or(DEFAULT_LIMIT).min(MAX_LIMIT) as usize;
+    let start = start_after.map(|s| Bound::ExclusiveRaw(s.into()));
+
     let keys = KEY_OWNER
-        .range(deps.storage, None, None, cosmwasm_std::Order::Ascending)
+        .range(deps.storage, start, None, cosmwasm_std::Order::Ascending)
         .filter(|x| x.as_ref().unwrap().1 == owner)
+        .take(limit)
         .map(|key| key.unwrap().0)
         .collect();
     Ok(keys)

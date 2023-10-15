@@ -50,7 +50,6 @@ pub fn all_ado_types(
     let ado_types: StdResult<Vec<String>> = CODE_ID
         .keys(storage, start, None, Order::Ascending)
         .take(limit)
-        .map(|item| item.map(|k| k))
         .collect();
     Ok(ado_types?)
 }

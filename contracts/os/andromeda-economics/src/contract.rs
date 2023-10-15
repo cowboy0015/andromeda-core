@@ -267,7 +267,7 @@ fn execute_pay_fee(
                         &adodb_addr,
                         ado_type.as_str(),
                     )?;
-                    deps.api.addr_validate(&publisher.as_str())?
+                    deps.api.addr_validate(publisher.as_str())?
                 };
 
                 let receiver_balance = BALANCES

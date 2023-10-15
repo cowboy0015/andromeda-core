@@ -206,8 +206,18 @@ fn test_query_all_key() {
         set_value(deps.as_mut(), &Some(key), &value, info.sender.as_ref()).unwrap();
     }
 
-    let res: Vec<String> =
-        from_binary(&query(deps.as_ref(), mock_env(), QueryMsg::AllKeys {}).unwrap()).unwrap();
+    let res: Vec<String> = from_binary(
+        &query(
+            deps.as_ref(),
+            mock_env(),
+            QueryMsg::AllKeys {
+                start_after: None,
+                limit: None,
+            },
+        )
+        .unwrap(),
+    )
+    .unwrap();
 
     assert_eq!(res, keys)
 }
@@ -240,8 +250,18 @@ fn test_query_owner_keys() {
         .unwrap();
     }
 
-    let res: Vec<String> =
-        from_binary(&query(deps.as_ref(), mock_env(), QueryMsg::AllKeys {}).unwrap()).unwrap();
+    let res: Vec<String> = from_binary(
+        &query(
+            deps.as_ref(),
+            mock_env(),
+            QueryMsg::AllKeys {
+                start_after: None,
+                limit: None,
+            },
+        )
+        .unwrap(),
+    )
+    .unwrap();
     assert!(res.len() == 4, "Not all keys added");
 
     let res: Vec<String> = from_binary(
@@ -250,6 +270,8 @@ fn test_query_owner_keys() {
             mock_env(),
             QueryMsg::OwnerKeys {
                 owner: AndrAddr::from_string("sender1"),
+                start_after: None,
+                limit: None,
             },
         )
         .unwrap(),
@@ -263,6 +285,8 @@ fn test_query_owner_keys() {
             mock_env(),
             QueryMsg::OwnerKeys {
                 owner: AndrAddr::from_string("sender2"),
+                start_after: None,
+                limit: None,
             },
         )
         .unwrap(),

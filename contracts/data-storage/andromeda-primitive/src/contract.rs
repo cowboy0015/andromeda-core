@@ -101,8 +101,14 @@ pub fn migrate(deps: DepsMut, _env: Env, _msg: MigrateMsg) -> Result<Response, C
 pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> Result<Binary, ContractError> {
     match msg {
         QueryMsg::GetValue { key } => encode_binary(&get_value(deps.storage, key)?),
-        QueryMsg::AllKeys {} => encode_binary(&all_keys(deps.storage)?),
-        QueryMsg::OwnerKeys { owner } => encode_binary(&owner_keys(&deps, owner)?),
+        QueryMsg::AllKeys { start_after, limit } => {
+            encode_binary(&all_keys(deps.storage, start_after, limit)?)
+        }
+        QueryMsg::OwnerKeys {
+            owner,
+            start_after,
+            limit,
+        } => encode_binary(&owner_keys(&deps, owner, start_after, limit)?),
         _ => ADOContract::default().query(deps, env, msg),
     }
 }

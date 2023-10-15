@@ -47,12 +47,12 @@ pub fn publish(
     attributes.append(&mut store_res.attributes);
 
     // Add Publisher
-    let mut publisher_res = update_publisher(execute_env, &ado_version.as_str(), publisher)?;
+    let mut publisher_res = update_publisher(execute_env, ado_version.as_str(), publisher)?;
     attributes.append(&mut publisher_res.attributes);
 
     // Update action fees
     if let Some(fees) = action_fees {
-        let mut update_res = update_action_fees(execute_env, &ado_version.as_str(), fees)?;
+        let mut update_res = update_action_fees(execute_env, ado_version.as_str(), fees)?;
         attributes.append(&mut update_res.attributes);
     }
 

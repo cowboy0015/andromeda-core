@@ -36,9 +36,16 @@ pub enum QueryMsg {
     #[returns(GetValueResponse)]
     GetValue { key: Option<String> },
     #[returns(Vec<String>)]
-    AllKeys {},
+    AllKeys {
+        start_after: Option<String>,
+        limit: Option<u32>,
+    },
     #[returns(Vec<String>)]
-    OwnerKeys { owner: AndrAddr },
+    OwnerKeys {
+        owner: AndrAddr,
+        start_after: Option<String>,
+        limit: Option<u32>,
+    },
 }
 
 #[cw_serde]
