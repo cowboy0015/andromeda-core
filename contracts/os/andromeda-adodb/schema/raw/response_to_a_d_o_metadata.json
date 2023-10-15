@@ -15,7 +15,6 @@
       "required": [
         "last_updated_by",
         "published_on",
-        "publisher",
         "updated_on"
       ],
       "properties": {
@@ -24,9 +23,6 @@
         },
         "published_on": {
           "$ref": "#/definitions/Timestamp"
-        },
-        "publisher": {
-          "$ref": "#/definitions/Addr"
         },
         "updated_on": {
           "$ref": "#/definitions/Timestamp"

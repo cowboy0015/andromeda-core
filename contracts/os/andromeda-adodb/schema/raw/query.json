@@ -134,6 +134,27 @@
     {
       "type": "object",
       "required": [
+        "ado_publisher"
+      ],
+      "properties": {
+        "ado_publisher": {
+          "type": "object",
+          "required": [
+            "ado_version"
+          ],
+          "properties": {
+            "ado_version": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
         "action_fee"
       ],
       "properties": {

@@ -60,6 +60,16 @@
               "format": "uint64",
               "minimum": 0.0
             },
+            "publisher": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Addr"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
             "version": {
               "type": "string"
             }
@@ -118,6 +128,31 @@
             },
             "ado_type": {
               "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "update_publisher"
+      ],
+      "properties": {
+        "update_publisher": {
+          "type": "object",
+          "required": [
+            "ado_version",
+            "publisher"
+          ],
+          "properties": {
+            "ado_version": {
+              "type": "string"
+            },
+            "publisher": {
+              "$ref": "#/definitions/Addr"
             }
           },
           "additionalProperties": false
