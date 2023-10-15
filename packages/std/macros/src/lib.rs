@@ -212,9 +212,9 @@ pub fn andr_query(_metadata: TokenStream, input: TokenStream) -> TokenStream {
                 Version {},
                 #[returns(::cosmwasm_std::BalanceResponse)]
                 Balance {
-                    address: ::andromeda_std::amp::AndrAddr,
+                    address: andromeda_std::amp::AndrAddr,
                 },
-                #[returns(Vec<::andromeda_std::ado_base::permissioning::PermissionInfo>)]
+                #[returns(Vec<andromeda_std::ado_base::permissioning::PermissionInfo>)]
                 Permissions { actor: String, limit: Option<u32>, start_after: Option<String> },
                 #[returns(Vec<String>)]
                 PermissionedActions { },
@@ -244,8 +244,8 @@ pub fn andr_query(_metadata: TokenStream, input: TokenStream) -> TokenStream {
             merged,
             quote! {
                 enum Right {
-                    #[returns(::cosmwasm_std::Binary)]
-                    AndrHook(::andromeda_std::ado_base::hooks::AndromedaHook),
+                    #[returns(cosmwasm_std::Binary)]
+                    AndrHook(andromeda_std::ado_base::hooks::AndromedaHook),
                 }
             }
             .into(),

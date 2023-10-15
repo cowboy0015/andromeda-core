@@ -1,5 +1,5 @@
 use cosmwasm_schema::{cw_serde, QueryResponses};
-use cosmwasm_std::{Addr, Binary, Uint128};
+use cosmwasm_std::{Addr, Binary, Timestamp, Uint128};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -21,7 +21,7 @@ pub enum ExecuteMsg {
         ado_type: String,
         action_fees: Option<Vec<ActionFee>>,
         version: String,
-        publisher: Option<String>,
+        publisher: Option<Addr>,
     },
     UpdateActionFees {
         ado_type: String,
@@ -32,8 +32,8 @@ pub enum ExecuteMsg {
         actions: Vec<String>,
     },
     UpdatePublisher {
-        ado_type: String,
-        publisher: String,
+        ado_version: String,
+        publisher: Addr,
     },
 }
 
@@ -70,8 +70,9 @@ pub struct MigrateMsg {}
 
 #[cw_serde]
 pub struct ADOMetadata {
-    pub publisher: String,
-    pub latest_version: String,
+    pub last_updated_by: Addr,
+    pub published_on: Timestamp,
+    pub updated_on: Timestamp,
 }
 
 #[cw_serde]
@@ -89,17 +90,27 @@ pub enum QueryMsg {
     ADOType { code_id: u64 },
     #[returns(Vec<String>)]
     #[serde(rename = "all_ado_types")]
-    AllADOTypes {},
+    AllADOTypes {
+        start_after: Option<String>,
+        limit: Option<u32>,
+    },
+    #[returns(Vec<String>)]
+    #[serde(rename = "ado_versions")]
+    ADOVersions {
+        ado_type: String,
+        start_after: Option<String>,
+        limit: Option<u32>,
+    },
     #[returns(Option<ADOMetadata>)]
     #[serde(rename = "ado_metadata")]
-    ADOMetadata { ado_type: String },
+    ADOMetadata { ado_version: String },
+    #[returns(Addr)]
+    #[serde(rename = "ado_publisher")]
+    ADOPublisher { ado_version: String },
     #[returns(Option<ActionFee>)]
     ActionFee { ado_type: String, action: String },
     #[returns(Option<ActionFee>)]
     ActionFeeByCodeId { code_id: u64, action: String },
-    // TODO: REMOVE
-    #[returns(u64)]
-    AndrQuery(AndrQuery),
 }
 
 #[derive(
@@ -108,6 +119,8 @@ pub enum QueryMsg {
 pub struct ADOVersion(String);
 
 impl ADOVersion {
+    pub const LATEST: &'static str = "latest";
+
     #[inline]
     pub fn as_str(&self) -> &str {
         self.0.as_str()
@@ -124,23 +137,49 @@ impl ADOVersion {
     }
 
     #[inline]
-    pub fn from_string(string: impl Into<String>) -> ADOVersion {
-        ADOVersion(string.into())
+    pub fn from_string(string: impl Into<String>) -> Self {
+        Self(string.into())
     }
 
     #[inline]
-    pub fn from_type(ado_type: impl Into<String>) -> ADOVersion {
-        ADOVersion(ado_type.into())
+    pub fn from_type(ado_type: impl Into<String>) -> Self {
+        Self(ado_type.into())
     }
 
     #[inline]
-    pub fn with_version(&self, version: impl Into<String>) -> ADOVersion {
+    pub fn with_version(&self, version: impl Into<String>) -> Self {
         let mut ado_version = self.clone();
         // Remove any previous version string if present
         ado_version.0 = ado_version.get_type();
         ado_version.0.push('@');
         ado_version.0.push_str(&version.into());
         ado_version
+    }
+
+    /// Gets the version for the given ADOVersion
+    ///
+    /// Returns `"latest"` if no version provided
+    pub fn get_version(&self) -> String {
+        match self
+            .clone()
+            .into_string()
+            .split('@')
+            .collect::<Vec<&str>>()
+            .len()
+        {
+            1 => Self::LATEST.to_string(),
+            _ => self.clone().into_string().split('@').collect::<Vec<&str>>()[1].to_string(),
+        }
+    }
+
+    /// Gets the type for the given ADOVersion
+    pub fn get_type(&self) -> String {
+        self.clone().into_string().split('@').collect::<Vec<&str>>()[0].to_string()
+    }
+
+    /// Gets the type for the given ADOVersion
+    pub fn get_tuple(&self) -> (String, String) {
+        (self.get_type(), self.get_version())
     }
 
     /// Validates a given ADOVersion
@@ -157,30 +196,9 @@ impl ADOVersion {
         !self.clone().into_string().is_empty() && self.clone().into_string().split('@').count() <= 2
     }
 
-    /// Gets the version for the given ADOVersion
-    ///
-    /// Returns `"latest"` if no version provided
-    pub fn get_version(&self) -> String {
-        match self
-            .clone()
-            .into_string()
-            .split('@')
-            .collect::<Vec<&str>>()
-            .len()
-        {
-            1 => "latest".to_string(),
-            _ => self.clone().into_string().split('@').collect::<Vec<&str>>()[1].to_string(),
-        }
-    }
-
-    /// Gets the type for the given ADOVersion
-    pub fn get_type(&self) -> String {
-        self.clone().into_string().split('@').collect::<Vec<&str>>()[0].to_string()
-    }
-
-    /// Gets the type for the given ADOVersion
-    pub fn get_tuple(&self) -> (String, String) {
-        (self.get_type(), self.get_version())
+    // Same as validate but it also fail if version is not provided or version is 'latest'
+    pub fn validate_strict(&self) -> bool {
+        self.validate() && self.get_version() != Self::LATEST
     }
 }
 

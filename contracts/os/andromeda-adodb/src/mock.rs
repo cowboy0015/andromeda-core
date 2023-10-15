@@ -2,7 +2,7 @@
 
 use crate::contract::{execute, instantiate, query};
 use andromeda_std::os::adodb::{ActionFee, ExecuteMsg, InstantiateMsg, QueryMsg};
-use cosmwasm_std::Empty;
+use cosmwasm_std::{Addr, Empty};
 use cw_multi_test::{Contract, ContractWrapper};
 
 pub fn mock_andromeda_adodb() -> Box<dyn Contract<Empty>> {
@@ -10,18 +10,15 @@ pub fn mock_andromeda_adodb() -> Box<dyn Contract<Empty>> {
     Box::new(contract)
 }
 
-pub fn mock_adodb_instantiate_msg(
-    kernel_address: impl Into<String>,
-    owner: Option<String>,
-) -> InstantiateMsg {
+pub fn mock_adodb_instantiate_msg(kernel_address: Addr, owner: Option<String>) -> InstantiateMsg {
     InstantiateMsg {
-        kernel_address: kernel_address.into(),
+        kernel_address: kernel_address.to_string(),
         owner,
     }
 }
 
 /// Used to generate a message to store a Code ID
-pub fn mock_store_code_id_msg(code_id_key: String, code_id: u64) -> ExecuteMsg {
+pub fn mock_update_code_id_msg(code_id_key: String, code_id: u64) -> ExecuteMsg {
     ExecuteMsg::UpdateCodeId {
         code_id_key,
         code_id,
@@ -29,18 +26,18 @@ pub fn mock_store_code_id_msg(code_id_key: String, code_id: u64) -> ExecuteMsg {
 }
 
 pub fn mock_publish(
-    code_id: u64,
     ado_type: impl Into<String>,
+    code_id: u64,
     version: impl Into<String>,
-    publisher: Option<String>,
     action_fees: Option<Vec<ActionFee>>,
+    publisher: Option<Addr>,
 ) -> ExecuteMsg {
     ExecuteMsg::Publish {
         code_id,
         ado_type: ado_type.into(),
         version: version.into(),
-        publisher,
         action_fees,
+        publisher,
     }
 }
 

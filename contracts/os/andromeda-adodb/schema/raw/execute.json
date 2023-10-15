@@ -60,12 +60,6 @@
               "format": "uint64",
               "minimum": 0.0
             },
-            "publisher": {
-              "type": [
-                "string",
-                "null"
-              ]
-            },
             "version": {
               "type": "string"
             }
@@ -123,31 +117,6 @@
               }
             },
             "ado_type": {
-              "type": "string"
-            }
-          },
-          "additionalProperties": false
-        }
-      },
-      "additionalProperties": false
-    },
-    {
-      "type": "object",
-      "required": [
-        "update_publisher"
-      ],
-      "properties": {
-        "update_publisher": {
-          "type": "object",
-          "required": [
-            "ado_type",
-            "publisher"
-          ],
-          "properties": {
-            "ado_type": {
-              "type": "string"
-            },
-            "publisher": {
               "type": "string"
             }
           },

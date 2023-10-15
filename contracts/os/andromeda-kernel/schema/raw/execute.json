@@ -80,6 +80,12 @@
             "ado_type": {
               "type": "string"
             },
+            "chain": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
             "msg": {
               "$ref": "#/definitions/Binary"
             },

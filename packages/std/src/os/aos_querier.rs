@@ -73,9 +73,9 @@ impl AOSQuerier {
         querier: &QuerierWrapper,
         adodb_addr: &Addr,
         ado_type: &str,
-    ) -> Result<String, ContractError> {
+    ) -> Result<Addr, ContractError> {
         let key = AOSQuerier::get_map_storage_key("publisher", &[ado_type.as_bytes()])?;
-        let verify: Option<String> = AOSQuerier::query_storage(querier, adodb_addr, &key)?;
+        let verify: Option<Addr> = AOSQuerier::query_storage(querier, adodb_addr, &key)?;
 
         match verify {
             Some(publisher) => Ok(publisher),
@@ -104,13 +104,11 @@ impl AOSQuerier {
         adodb_addr: &Addr,
         ado_type: &str,
     ) -> Result<u64, ContractError> {
-        let key = AOSQuerier::get_map_storage_key("code_id", &[ado_type.as_bytes()])?;
-        let verify: Option<u64> = AOSQuerier::query_storage(querier, adodb_addr, &key)?;
-
-        match verify {
-            Some(code_id) => Ok(code_id),
-            None => Err(ContractError::InvalidAddress {}),
-        }
+        let query = ADODBQueryMsg::CodeId {
+            key: ado_type.to_string(),
+        };
+        let code_id: u64 = querier.query_wasm_smart(adodb_addr, &query)?;
+        Ok(code_id)
     }
 
     /// Queries the kernel's raw storage for the VFS's address

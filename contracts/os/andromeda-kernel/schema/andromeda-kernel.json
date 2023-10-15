@@ -6,12 +6,12 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "InstantiateMsg",
     "type": "object",
+    "required": [
+      "chain_name"
+    ],
     "properties": {
       "chain_name": {
-        "type": [
-          "string",
-          "null"
-        ]
+        "type": "string"
       },
       "owner": {
         "type": [
@@ -103,6 +103,12 @@
             "properties": {
               "ado_type": {
                 "type": "string"
+              },
+              "chain": {
+                "type": [
+                  "string",
+                  "null"
+                ]
               },
               "msg": {
                 "$ref": "#/definitions/Binary"

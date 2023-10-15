@@ -2,13 +2,13 @@
 
 use andromeda_adodb::mock::{
     mock_adodb_instantiate_msg, mock_andromeda_adodb, mock_get_code_id_msg, mock_publish,
-    mock_store_code_id_msg,
 };
 use andromeda_economics::mock::{mock_andromeda_economics, mock_economics_instantiate_msg};
 use andromeda_kernel::mock::{
     mock_andromeda_kernel, mock_get_key_address, mock_kernel_instantiate_message,
     mock_upsert_key_address,
 };
+use andromeda_std::testing::mock_querier::MOCK_ADO_PUBLISHER;
 use andromeda_vfs::mock::{
     mock_add_path, mock_andromeda_vfs, mock_register_user, mock_resolve_path_query,
     mock_vfs_instantiate_message,
@@ -85,10 +85,27 @@ impl MockAndromeda {
             .unwrap();
 
         // Add Code IDs
-        let store_adodb_code_id_msg = mock_store_code_id_msg("adodb".to_string(), adodb_code_id); //Dev Note: In future change this to "adodb" for the key
-        let store_kernel_code_id_msg = mock_store_code_id_msg("kernel".to_string(), kernel_code_id);
-        let store_economics_code_id_msg =
-            mock_store_code_id_msg("economics".to_string(), economics_code_id);
+        let store_adodb_code_id_msg = mock_publish(
+            "adodb".to_string(),
+            adodb_code_id,
+            "0.1.0",
+            None,
+            Some(Addr::unchecked(MOCK_ADO_PUBLISHER)),
+        ); //Dev Note: In future change this to "adodb" for the key
+        let store_kernel_code_id_msg = mock_publish(
+            "kernel".to_string(),
+            kernel_code_id,
+            "0.1.0",
+            None,
+            Some(Addr::unchecked(MOCK_ADO_PUBLISHER)),
+        );
+        let store_economics_code_id_msg = mock_publish(
+            "economics".to_string(),
+            economics_code_id,
+            "0.1.0",
+            None,
+            Some(Addr::unchecked(MOCK_ADO_PUBLISHER)),
+        );
         app.execute_contract(
             admin_address.clone(),
             adodb_address.clone(),
@@ -127,7 +144,13 @@ impl MockAndromeda {
 
     /// Stores a given Code ID under the given key in the ADO DB contract
     pub fn store_code_id(&self, app: &mut App, key: &str, code_id: u64) {
-        let msg = mock_publish(code_id, key, "0.1.0", None, None);
+        let msg = mock_publish(
+            key,
+            code_id,
+            "0.1.0",
+            None,
+            Some(Addr::unchecked(MOCK_ADO_PUBLISHER)),
+        );
 
         app.execute_contract(
             self.admin_address.clone(),
