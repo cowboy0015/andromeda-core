@@ -4,7 +4,6 @@ use crate::{
     common::context::ExecuteContext,
     error::ContractError,
 };
-use cosmwasm_std::{ensure, Deps, Env, MessageInfo, Order, Response, Storage};
 #[cfg(all(feature = "vanilla", not(feature = "secret")))]
 use cosmwasm_std::{ensure, Deps, Env, MessageInfo, Order, Response, Storage};
 #[cfg(all(feature = "vanilla", not(feature = "secret")))]
