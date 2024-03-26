@@ -173,7 +173,7 @@ impl MockAndromedaQuerier {
                         "Not a valid contract".to_string(),
                     ));
                 }
-                let mut resp = ContractInfoResponse::default();
+                let mut resp = ContractInfoResponse::new();
                 resp.code_id = match contract_addr.as_str() {
                     MOCK_APP_CONTRACT => 3,
                     INVALID_CONTRACT => 2,

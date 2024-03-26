@@ -31,7 +31,8 @@ impl WithdrawalType {
         match self {
             WithdrawalType::Percentage(percent) => {
                 ensure!(*percent <= Decimal::one(), ContractError::InvalidRate {});
-                Ok(balance * *percent)
+                let decimal_result = Decimal::new(balance) * *percent;
+                Ok(decimal_result.atomics())
             }
             WithdrawalType::Amount(amount) => Ok(cmp::min(*amount, balance)),
         }

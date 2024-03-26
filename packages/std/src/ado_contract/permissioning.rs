@@ -29,7 +29,7 @@ impl<'a> IndexList<PermissionInfo> for PermissionsIndices<'a> {
 /// Permissions for the ADO contract
 ///
 /// Permissions are stored in a multi-indexed map with the primary key being the action and actor
-pub fn permissions<'a>() -> IndexedMap<'a, &'a str, PermissionInfo, PermissionsIndices<'a>> {
+pub fn permissions<'a>() -> IndexedMap<&'a str, PermissionInfo, PermissionsIndices<'a>> {
     let indexes = PermissionsIndices {
         permissions: MultiIndex::new(|_pk: &[u8], r| r.actor.clone(), "andr_permissions", "actor"),
     };

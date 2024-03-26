@@ -244,7 +244,7 @@ fn process_module_response<T>(
 ) -> Result<Option<T>, ContractError> {
     match mod_resp {
         Ok(mod_resp) => Ok(mod_resp),
-        Err(StdError::NotFound { kind }) => {
+        Err(StdError::NotFound { kind, .. }) => {
             if kind.contains("operation") {
                 Ok(None)
             } else {

@@ -41,11 +41,11 @@ andromeda-testing = { path = "./packages/andromeda-testing" }
 
 serde = { version = "1.0.127", default-features = false }
 strum_macros = "0.24.3"
-cosmwasm-std = "1.5.3"
-cw-utils = "1.0.3"
-cw-storage-plus = "1.2.0"
-cw2 = "1.1.2"
-cosmwasm-schema = "1.5.3"
+cosmwasm-std = "2.0.0"
+cw-utils = "2.0.0"
+cw-storage-plus = "2.0.0"
+cw2 = "2.0.0"
+cosmwasm-schema = "2.0.0"
 cw20 = "1.1.2"
 cw20-base = "1.1.2"
 cw721 = "0.18.0"

@@ -4,17 +4,17 @@ use cosmwasm_std::Addr;
 use cw_storage_plus::{Item, Map};
 
 pub struct ADOContract<'a> {
-    pub(crate) owner: Item<'a, Addr>,
-    pub(crate) original_publisher: Item<'a, Addr>,
-    pub(crate) block_height: Item<'a, u64>,
-    pub(crate) ado_type: Item<'a, String>,
-    pub(crate) app_contract: Item<'a, Addr>,
-    pub(crate) kernel_address: Item<'a, Addr>,
-    pub(crate) permissioned_actions: Map<'a, String, bool>,
+    pub(crate) owner: Item<Addr>,
+    pub(crate) original_publisher: Item<Addr>,
+    pub(crate) block_height: Item<u64>,
+    pub(crate) ado_type: Item<String>,
+    pub(crate) app_contract: Item<Addr>,
+    pub(crate) kernel_address: Item<Addr>,
+    pub(crate) permissioned_actions: Map<String, bool>,
     #[cfg(feature = "modules")]
-    pub(crate) module_info: Map<'a, &'a str, Module>,
+    pub(crate) module_info: Map<&'a str, Module>,
     #[cfg(feature = "modules")]
-    pub(crate) module_idx: Item<'a, u64>,
+    pub(crate) module_idx: Item<u64>,
 }
 
 impl<'a> Default for ADOContract<'a> {

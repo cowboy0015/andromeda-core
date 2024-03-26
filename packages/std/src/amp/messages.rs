@@ -147,6 +147,7 @@ impl AMPMsg {
                 msg,
                 funds: self.funds.to_vec(),
             }),
+            payload: Binary::default(),
         })
     }
 
@@ -156,6 +157,7 @@ impl AMPMsg {
             reply_on: self.config.reply_on.clone(),
             gas_limit: self.config.gas_limit,
             msg: CosmosMsg::Wasm(wasm_execute(addr, &self.message, self.funds.to_vec()).unwrap()),
+            payload: Binary::default(),
         }
     }
 
@@ -303,7 +305,8 @@ impl AMPPkt {
     /// If the sender is not valid, an error is returned
     pub fn verify_origin(&self, info: &MessageInfo, deps: &Deps) -> Result<(), ContractError> {
         let kernel_address = ADOContract::default().get_kernel_address(deps.storage)?;
-        if info.sender == self.ctx.origin || info.sender == kernel_address {
+        let origin = deps.api.addr_validate(&self.ctx.origin)?;
+        if info.sender == origin || info.sender == kernel_address {
             Ok(())
         } else {
             let adodb_address: Addr =
