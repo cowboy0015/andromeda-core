@@ -19,7 +19,10 @@ use andromeda_std::{
     amp::{addresses::AndrAddr, recipient::Recipient},
     common::{
         encode_binary,
-        expiration::{expiration_from_milliseconds, MILLISECONDS_TO_NANOSECONDS_RATIO},
+        expiration::{
+            expiration_from_milliseconds, get_and_validate_start_time,
+            MILLISECONDS_TO_NANOSECONDS_RATIO,
+        },
         Milliseconds,
     },
     error::ContractError,
@@ -497,6 +500,7 @@ fn test_start_sale_max_default() {
 
     assert_eq!(
         State {
+            start_time: start_expiration,
             end_time: end_expiration,
             price: coin(100, "uusd"),
             min_tokens_sold: Uint128::from(1u128),
@@ -550,6 +554,7 @@ fn test_start_sale_max_modified() {
 
     assert_eq!(
         State {
+            start_time: start_expiration,
             end_time: end_expiration,
             price: coin(100, "uusd"),
             min_tokens_sold: Uint128::from(1u128),
@@ -593,6 +598,7 @@ fn test_purchase_sale_not_ended() {
         .save(
             deps.as_mut().storage,
             &State {
+                start_time: get_and_validate_start_time(&mock_env(), None).unwrap().0,
                 end_time: Expiration::AtHeight(mock_env().block.height - 1),
                 price: coin(100, "uusd"),
                 min_tokens_sold: Uint128::from(1u128),
@@ -633,6 +639,7 @@ fn test_purchase_no_funds() {
         .save(
             deps.as_mut().storage,
             &State {
+                start_time: get_and_validate_start_time(&mock_env(), None).unwrap().0,
                 end_time: Expiration::AtHeight(mock_env().block.height + 1),
                 price: coin(100, "uusd"),
                 min_tokens_sold: Uint128::from(1u128),
@@ -650,13 +657,16 @@ fn test_purchase_no_funds() {
     let msg = ExecuteMsg::Purchase {
         number_of_tokens: None,
     };
-    let res = execute(deps.as_mut(), mock_env(), info.clone(), msg);
+    let mut env = mock_env();
+    env.block.time = env.block.time.plus_nanos(MILLISECONDS_TO_NANOSECONDS_RATIO);
+
+    let res = execute(deps.as_mut(), env.clone(), info.clone(), msg);
     assert_eq!(ContractError::InsufficientFunds {}, res.unwrap_err());
 
     let msg = ExecuteMsg::PurchaseByTokenId {
         token_id: MOCK_TOKENS_FOR_SALE[0].to_owned(),
     };
-    let res = execute(deps.as_mut(), mock_env(), info, msg);
+    let res = execute(deps.as_mut(), env, info, msg);
     assert_eq!(ContractError::InsufficientFunds {}, res.unwrap_err());
 }
 
@@ -671,6 +681,7 @@ fn test_purchase_wrong_denom() {
         .save(
             deps.as_mut().storage,
             &State {
+                start_time: get_and_validate_start_time(&mock_env(), None).unwrap().0,
                 end_time: Expiration::AtHeight(mock_env().block.height + 1),
                 price: coin(100, "uusd"),
                 min_tokens_sold: Uint128::from(1u128),
@@ -688,13 +699,16 @@ fn test_purchase_wrong_denom() {
     let msg = ExecuteMsg::Purchase {
         number_of_tokens: None,
     };
-    let res = execute(deps.as_mut(), mock_env(), info.clone(), msg);
+
+    let mut env = mock_env();
+    env.block.time = env.block.time.plus_nanos(MILLISECONDS_TO_NANOSECONDS_RATIO);
+    let res = execute(deps.as_mut(), env.clone(), info.clone(), msg);
     assert_eq!(ContractError::InsufficientFunds {}, res.unwrap_err());
 
     let msg = ExecuteMsg::PurchaseByTokenId {
         token_id: MOCK_TOKENS_FOR_SALE[0].to_owned(),
     };
-    let res = execute(deps.as_mut(), mock_env(), info, msg);
+    let res = execute(deps.as_mut(), env, info, msg);
     assert_eq!(ContractError::InsufficientFunds {}, res.unwrap_err());
 }
 
@@ -714,6 +728,7 @@ fn test_purchase_not_enough_for_price() {
         .save(
             deps.as_mut().storage,
             &State {
+                start_time: get_and_validate_start_time(&mock_env(), None).unwrap().0,
                 end_time: Expiration::AtHeight(mock_env().block.height + 1),
                 price: coin(100, "uusd"),
                 min_tokens_sold: Uint128::from(1u128),
@@ -728,16 +743,18 @@ fn test_purchase_not_enough_for_price() {
 
     let info = mock_info("sender", &coins(50u128, "uusd"));
 
+    let mut env = mock_env();
+    env.block.time = env.block.time.plus_nanos(MILLISECONDS_TO_NANOSECONDS_RATIO);
     let msg = ExecuteMsg::Purchase {
         number_of_tokens: None,
     };
-    let res = execute(deps.as_mut(), mock_env(), info.clone(), msg);
+    let res = execute(deps.as_mut(), env.clone(), info.clone(), msg);
     assert_eq!(ContractError::InsufficientFunds {}, res.unwrap_err());
 
     let msg = ExecuteMsg::PurchaseByTokenId {
         token_id: MOCK_TOKENS_FOR_SALE[0].to_owned(),
     };
-    let res = execute(deps.as_mut(), mock_env(), info, msg);
+    let res = execute(deps.as_mut(), env, info, msg);
     assert_eq!(ContractError::InsufficientFunds {}, res.unwrap_err());
 }
 
@@ -761,6 +778,7 @@ fn test_purchase_not_enough_for_tax() {
         .save(
             deps.as_mut().storage,
             &State {
+                start_time: get_and_validate_start_time(&mock_env(), None).unwrap().0,
                 end_time: Expiration::AtHeight(mock_env().block.height + 1),
                 price: coin(100, "uusd"),
                 min_tokens_sold: Uint128::from(1u128),
@@ -775,10 +793,13 @@ fn test_purchase_not_enough_for_tax() {
 
     let info = mock_info("sender", &coins(100u128, "uusd"));
 
+    let mut env = mock_env();
+    env.block.time = env.block.time.plus_nanos(MILLISECONDS_TO_NANOSECONDS_RATIO);
+
     let msg = ExecuteMsg::Purchase {
         number_of_tokens: None,
     };
-    let res = execute(deps.as_mut(), mock_env(), info.clone(), msg);
+    let res = execute(deps.as_mut(), env.clone(), info.clone(), msg);
     assert_eq!(ContractError::InsufficientFunds {}, res.unwrap_err());
 
     // Reset the state since state does not roll back on failure in tests like it does in prod.
@@ -792,7 +813,7 @@ fn test_purchase_not_enough_for_tax() {
     let msg = ExecuteMsg::PurchaseByTokenId {
         token_id: MOCK_TOKENS_FOR_SALE[0].to_owned(),
     };
-    let res = execute(deps.as_mut(), mock_env(), info, msg);
+    let res = execute(deps.as_mut(), env, info, msg);
     assert_eq!(ContractError::InsufficientFunds {}, res.unwrap_err());
 }
 
@@ -812,6 +833,7 @@ fn test_purchase_by_token_id_not_available() {
         .save(
             deps.as_mut().storage,
             &State {
+                start_time: get_and_validate_start_time(&mock_env(), None).unwrap().0,
                 end_time: Expiration::AtHeight(mock_env().block.height + 1),
                 price: coin(100, "uusd"),
                 min_tokens_sold: Uint128::from(1u128),
@@ -829,7 +851,10 @@ fn test_purchase_by_token_id_not_available() {
     let msg = ExecuteMsg::PurchaseByTokenId {
         token_id: MOCK_TOKENS_FOR_SALE[1].to_owned(),
     };
-    let res = execute(deps.as_mut(), mock_env(), info, msg);
+    let mut env = mock_env();
+    env.block.time = env.block.time.plus_nanos(MILLISECONDS_TO_NANOSECONDS_RATIO);
+
+    let res = execute(deps.as_mut(), env, info, msg);
     assert_eq!(ContractError::TokenNotAvailable {}, res.unwrap_err());
 }
 
@@ -847,6 +872,7 @@ fn test_purchase_by_token_id() {
     mint(deps.as_mut(), MOCK_TOKENS_FOR_SALE[1]).unwrap();
 
     let mut state = State {
+        start_time: get_and_validate_start_time(&mock_env(), None).unwrap().0,
         end_time: Expiration::AtHeight(mock_env().block.height + 1),
         price: coin(100, "uusd"),
         min_tokens_sold: Uint128::from(1u128),
@@ -861,11 +887,13 @@ fn test_purchase_by_token_id() {
 
     let info = mock_info("sender", &coins(150, "uusd"));
 
+    let mut env = mock_env();
+    env.block.time = env.block.time.plus_nanos(MILLISECONDS_TO_NANOSECONDS_RATIO);
     // Purchase a token.
     let msg = ExecuteMsg::PurchaseByTokenId {
         token_id: MOCK_TOKENS_FOR_SALE[0].to_owned(),
     };
-    let res = execute(deps.as_mut(), mock_env(), info.clone(), msg).unwrap();
+    let res = execute(deps.as_mut(), env.clone(), info.clone(), msg).unwrap();
     assert_eq!(
         Response::new()
             .add_attribute("action", "purchase")
@@ -890,7 +918,7 @@ fn test_purchase_by_token_id() {
     let msg = ExecuteMsg::PurchaseByTokenId {
         token_id: MOCK_TOKENS_FOR_SALE[1].to_owned(),
     };
-    let res = execute(deps.as_mut(), mock_env(), info, msg);
+    let res = execute(deps.as_mut(), env, info, msg);
 
     assert_eq!(ContractError::PurchaseLimitReached {}, res.unwrap_err());
 }
@@ -947,6 +975,7 @@ fn test_multiple_purchases() {
     };
 
     let mut state = State {
+        start_time: get_and_validate_start_time(&mock_env(), None).unwrap().0,
         end_time: Expiration::AtHeight(mock_env().block.height + 1),
         price: coin(100, "uusd"),
         min_tokens_sold: Uint128::from(1u128),
@@ -959,7 +988,10 @@ fn test_multiple_purchases() {
     STATE.save(deps.as_mut().storage, &state).unwrap();
 
     let info = mock_info("sender", &coins(300u128, "uusd"));
-    let res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
+    let mut env = mock_env();
+    env.block.time = env.block.time.plus_nanos(MILLISECONDS_TO_NANOSECONDS_RATIO);
+
+    let res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
 
     assert_eq!(
         Response::new()
@@ -991,7 +1023,7 @@ fn test_multiple_purchases() {
     };
 
     let info = mock_info("sender", &coins(300u128, "uusd"));
-    let res = execute(deps.as_mut(), mock_env(), info.clone(), msg).unwrap();
+    let res = execute(deps.as_mut(), env.clone(), info.clone(), msg).unwrap();
 
     assert_eq!(
         Response::new()
@@ -1026,7 +1058,7 @@ fn test_multiple_purchases() {
         number_of_tokens: Some(1),
     };
 
-    let res = execute(deps.as_mut(), mock_env(), info, msg);
+    let res = execute(deps.as_mut(), env.clone(), info, msg);
 
     assert_eq!(ContractError::PurchaseLimitReached {}, res.unwrap_err());
 
@@ -1036,7 +1068,7 @@ fn test_multiple_purchases() {
     };
 
     let info = mock_info("user2", &coins(300, "uusd"));
-    let res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
+    let res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
 
     assert_eq!(
         Response::new()
@@ -1074,7 +1106,7 @@ fn test_multiple_purchases() {
     };
 
     let info = mock_info("user2", &coins(150, "uusd"));
-    let res = execute(deps.as_mut(), mock_env(), info, msg);
+    let res = execute(deps.as_mut(), env, info, msg);
 
     assert_eq!(ContractError::AllTokensPurchased {}, res.unwrap_err());
 }
@@ -1101,6 +1133,7 @@ fn test_purchase_more_than_allowed_per_wallet() {
     };
 
     let state = State {
+        start_time: get_and_validate_start_time(&mock_env(), None).unwrap().0,
         end_time: Expiration::AtHeight(mock_env().block.height + 1),
         price: coin(100, "uusd"),
         min_tokens_sold: Uint128::from(1u128),
@@ -1113,7 +1146,10 @@ fn test_purchase_more_than_allowed_per_wallet() {
     STATE.save(deps.as_mut().storage, &state).unwrap();
 
     let info = mock_info("sender", &coins(600, "uusd"));
-    let res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
+    let mut env = mock_env();
+    env.block.time = env.block.time.plus_nanos(MILLISECONDS_TO_NANOSECONDS_RATIO);
+
+    let res = execute(deps.as_mut(), env, info, msg).unwrap();
 
     assert_eq!(
         Response::new()
@@ -1136,6 +1172,7 @@ fn test_end_sale_not_expired() {
     init(deps.as_mut(), None);
 
     let state = State {
+        start_time: get_and_validate_start_time(&mock_env(), None).unwrap().0,
         end_time: Expiration::AtHeight(mock_env().block.height + 1),
         price: coin(100, "uusd"),
         min_tokens_sold: Uint128::from(1u128),
@@ -1190,7 +1227,9 @@ fn test_integration_conditions_not_met() {
             .unwrap(),
         Uint128::new(7)
     );
-    let current_time = mock_env().block.time.nanos() / MILLISECONDS_TO_NANOSECONDS_RATIO;
+    let mut env = mock_env();
+
+    let current_time = env.block.time.nanos() / MILLISECONDS_TO_NANOSECONDS_RATIO;
 
     let msg = ExecuteMsg::StartSale {
         start_time: None,
@@ -1208,34 +1247,37 @@ fn test_integration_conditions_not_met() {
     let res = mint(deps.as_mut(), "token_id");
     assert_eq!(ContractError::SaleStarted {}, res.unwrap_err());
 
-    let msg = ExecuteMsg::Purchase {
-        number_of_tokens: Some(1),
-    };
-    let info = mock_info("A", &coins(150, "uusd"));
-    let _res = execute(deps.as_mut(), mock_env(), info.clone(), msg).unwrap();
+    env.block.time = env.block.time.plus_nanos(MILLISECONDS_TO_NANOSECONDS_RATIO);
 
     let msg = ExecuteMsg::Purchase {
         number_of_tokens: Some(1),
     };
-    let _res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
+    let info = mock_info("A", &coins(150, "uusd"));
+    let _res = execute(deps.as_mut(), env.clone(), info.clone(), msg).unwrap();
+
+    let msg = ExecuteMsg::Purchase {
+        number_of_tokens: Some(1),
+    };
+    let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
 
     let msg = ExecuteMsg::Purchase {
         number_of_tokens: Some(1),
     };
     let info = mock_info("B", &coins(150, "uusd"));
-    let _res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
+    let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
 
     let msg = ExecuteMsg::Purchase {
         number_of_tokens: Some(1),
     };
     let info = mock_info("C", &coins(150, "uusd"));
-    let _res = execute(deps.as_mut(), mock_env(), info, msg).unwrap();
+    let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
 
     // Using current time since start time wasn't provided
-    let current_time = mock_env().block.time.nanos() / MILLISECONDS_TO_NANOSECONDS_RATIO;
-    let end_expiration = expiration_from_milliseconds(Milliseconds(current_time + 2)).unwrap();
+    let current_time = env.block.time.nanos() / MILLISECONDS_TO_NANOSECONDS_RATIO;
+    let end_expiration = expiration_from_milliseconds(Milliseconds(current_time + 1)).unwrap();
 
     let state = State {
+        start_time: get_and_validate_start_time(&mock_env(), None).unwrap().0,
         end_time: end_expiration,
         price: coin(100, "uusd"),
         min_tokens_sold: Uint128::from(5u128),
@@ -1276,7 +1318,6 @@ fn test_integration_conditions_not_met() {
         Uint128::new(3)
     );
 
-    let mut env = mock_env();
     env.block.time = env.block.time.plus_hours(1);
 
     // User B claims their own refund.
@@ -1387,6 +1428,7 @@ fn test_integration_conditions_met() {
         number_of_tokens: Some(1),
     };
     let info = mock_info("A", &coins(150, "uusd"));
+    env.block.time = env.block.time.plus_nanos(MILLISECONDS_TO_NANOSECONDS_RATIO);
     let _res = execute(deps.as_mut(), env.clone(), info.clone(), msg).unwrap();
 
     let msg = ExecuteMsg::Purchase {
@@ -1411,10 +1453,11 @@ fn test_integration_conditions_met() {
     };
     let info = mock_info("D", &coins(150, "uusd"));
     let _res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
+
     // Using current time since start time wasn't provided
-    let current_time = env.block.time.nanos() / MILLISECONDS_TO_NANOSECONDS_RATIO;
     let end_expiration = expiration_from_milliseconds(Milliseconds(current_time + 2)).unwrap();
     let mut state = State {
+        start_time: get_and_validate_start_time(&mock_env(), None).unwrap().0,
         end_time: end_expiration,
         price: coin(100, "uusd"),
         min_tokens_sold: Uint128::from(3u128),
@@ -1607,6 +1650,7 @@ fn test_end_sale_single_purchase() {
         .save(
             deps.as_mut().storage,
             &State {
+                start_time: get_and_validate_start_time(&mock_env(), None).unwrap().0,
                 end_time: Expiration::AtHeight(mock_env().block.height - 1),
                 price: coin(100, "uusd"),
                 min_tokens_sold: Uint128::from(1u128),
@@ -1658,6 +1702,7 @@ fn test_end_sale_all_tokens_sold() {
         .save(
             deps.as_mut().storage,
             &State {
+                start_time: get_and_validate_start_time(&mock_env(), None).unwrap().0,
                 // Sale has not expired yet.
                 end_time: Expiration::AtHeight(mock_env().block.height + 1),
                 price: coin(100, "uusd"),
@@ -1714,6 +1759,7 @@ fn test_end_sale_some_tokens_sold_threshold_met() {
         .save(
             deps.as_mut().storage,
             &State {
+                start_time: get_and_validate_start_time(&mock_env(), None).unwrap().0,
                 // Sale has not expired yet.
                 end_time: Expiration::AtHeight(mock_env().block.height + 1),
                 price: coin(100, "uusd"),
@@ -1776,6 +1822,7 @@ fn test_end_sale_some_tokens_sold_threshold_not_met() {
         .save(
             deps.as_mut().storage,
             &State {
+                start_time: get_and_validate_start_time(&mock_env(), None).unwrap().0,
                 // Sale has not expired yet.
                 end_time: Expiration::AtHeight(mock_env().block.height + 1),
                 price: coin(100, "uusd"),
@@ -1823,6 +1870,7 @@ fn test_end_sale_limit_zero() {
         .save(
             deps.as_mut().storage,
             &State {
+                start_time: get_and_validate_start_time(&mock_env(), None).unwrap().0,
                 end_time: Expiration::AtHeight(mock_env().block.height - 1),
                 price: coin(100, "uusd"),
                 min_tokens_sold: Uint128::from(1u128),

@@ -76,6 +76,8 @@ pub struct Config {
 #[cw_serde]
 pub struct State {
     /// The expiration denoting when the sale ends.
+    pub start_time: Expiration,
+    /// The expiration denoting when the sale ends.
     pub end_time: Expiration,
     /// The price of each token.
     pub price: Coin,

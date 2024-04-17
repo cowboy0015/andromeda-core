@@ -183,6 +183,12 @@ fn test_crowdfund_app() {
         )
         .unwrap();
 
+    router.set_block(BlockInfo {
+        height: router.block_info().height,
+        time: router.block_info().time.plus_seconds(1),
+        chain_id: router.block_info().chain_id,
+    });
+
     // Buy Tokens
     let buyers = vec![buyer_one, buyer_two, buyer_three];
     for buyer in buyers.clone() {

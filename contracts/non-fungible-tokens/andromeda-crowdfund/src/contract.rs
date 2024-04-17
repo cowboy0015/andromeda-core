@@ -327,6 +327,7 @@ fn execute_start_sale(
     STATE.save(
         deps.storage,
         &State {
+            start_time: start_expiration,
             end_time: end_expiration,
             price,
             min_tokens_sold,
@@ -367,7 +368,7 @@ fn execute_purchase_by_token_id(
 
     let mut state = state.unwrap();
     ensure!(
-        !state.end_time.is_expired(&env.block),
+        state.start_time.is_expired(&env.block) && !state.end_time.is_expired(&env.block),
         ContractError::NoOngoingSale {}
     );
 
@@ -419,7 +420,7 @@ fn execute_purchase(
 
     let mut state = state.unwrap();
     ensure!(
-        !state.end_time.is_expired(&env.block),
+        state.start_time.is_expired(&env.block) && !state.end_time.is_expired(&env.block),
         ContractError::NoOngoingSale {}
     );
 
