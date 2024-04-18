@@ -13,8 +13,8 @@ use andromeda_std::{
     os::aos_querier::AOSQuerier,
 };
 use cosmwasm_std::{
-    ensure, wasm_execute, Addr, DepsMut, Empty, Env, Reply, Response, SubMsg, SubMsgResponse,
-    SubMsgResult,
+    ensure, to_json_binary, wasm_execute, Addr, DepsMut, Empty, Env, Reply, Response, SubMsg,
+    SubMsgResponse, SubMsgResult,
 };
 
 /// Handles the reply from an ADO creation
@@ -50,15 +50,20 @@ pub fn on_reply_ibc_hooks_packet_send(
     deps: DepsMut,
     msg: Reply,
 ) -> Result<Response, ContractError> {
-    let SubMsgResult::Ok(SubMsgResponse { data: Some(b), .. }) = msg.result else {
+    let SubMsgResult::Ok(SubMsgResponse { msg_responses, .. }) = msg.result else {
         return Err(ContractError::InvalidPacket {
             error: Some(format!("ibc hooks: failed reply: {:?}", msg.result)),
         });
     };
 
     let MsgTransferResponse { sequence } =
-        MsgTransferResponse::decode(&b[..]).map_err(|_e| ContractError::InvalidPacket {
-            error: Some(format!("ibc hooks: could not decode response: {b}")),
+        MsgTransferResponse::decode(&to_json_binary(&msg_responses)?[..]).map_err(|_e| {
+            ContractError::InvalidPacket {
+                error: Some(format!(
+                    "ibc hooks: could not decode response: {:?}",
+                    msg_responses
+                )),
+            }
         })?;
 
     let mut outgoing_packets = OUTGOING_IBC_HOOKS_PACKETS

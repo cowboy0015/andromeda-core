@@ -54,6 +54,7 @@ impl StrategyType {
                     msg: CosmosMsg::Wasm(msg),
                     gas_limit: None,
                     reply_on: ReplyOn::Error,
+                    payload: Binary::default(),
                 };
 
                 Ok(sub_msg)

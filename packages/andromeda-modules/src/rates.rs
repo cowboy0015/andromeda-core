@@ -142,11 +142,11 @@ pub fn calculate_fee(fee_rate: Rate, payment: &Coin) -> Result<Coin, ContractErr
                 percent <= Decimal::one() && !percent.is_zero(),
                 ContractError::InvalidRate {}
             );
-            let mut fee_amount = payment.amount * percent;
+            let mut fee_amount = payment.amount.mul_floor(percent);
 
             // Always round any remainder up and prioritise the fee receiver.
             // Inverse of percent will always exist.
-            let reversed_fee = fee_amount * percent.inv().unwrap();
+            let reversed_fee = fee_amount.mul_floor(percent.inv().unwrap());
             if payment.amount > reversed_fee {
                 // [COM-1] Added checked add to fee_amount rather than direct increment
                 fee_amount = fee_amount.checked_add(1u128.into())?;

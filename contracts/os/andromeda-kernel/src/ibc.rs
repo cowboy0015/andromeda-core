@@ -105,10 +105,9 @@ pub fn ibc_packet_receive(
     // in a seprate function and on error write out an error ack.
     match do_ibc_packet_receive(deps, env, msg) {
         Ok(response) => Ok(response),
-        Err(error) => Ok(IbcReceiveResponse::new()
+        Err(error) => Ok(IbcReceiveResponse::new(make_ack_fail(error.to_string()))
             .add_attribute("method", "ibc_packet_receive")
-            .add_attribute("error", error.to_string())
-            .set_ack(make_ack_fail(error.to_string()))),
+            .add_attribute("error", error.to_string())),
     }
 }
 
@@ -146,8 +145,7 @@ pub fn do_ibc_packet_receive(
             let amp_msg = AMPMsg::new(recipient, message, None);
             let res = execute::send(execute_env, amp_msg)?;
 
-            Ok(IbcReceiveResponse::new()
-                .set_ack(make_ack_success())
+            Ok(IbcReceiveResponse::new(make_ack_success())
                 .add_attributes(res.attributes)
                 .add_submessages(res.messages)
                 .add_events(res.events))
@@ -196,9 +194,7 @@ pub fn ibc_register_username(
         },
         ReplyId::RegisterUsername.repr(),
     );
-    Ok(IbcReceiveResponse::new()
-        .add_submessage(sub_msg)
-        .set_ack(make_ack_success()))
+    Ok(IbcReceiveResponse::new(make_ack_success()).add_submessage(sub_msg))
 }
 
 pub fn validate_order_and_version(

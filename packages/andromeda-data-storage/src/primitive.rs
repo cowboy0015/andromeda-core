@@ -62,10 +62,7 @@ pub enum PrimitiveRestriction {
 }
 
 fn parse_error(type_name: String) -> StdError {
-    StdError::ParseErr {
-        target_type: type_name.clone(),
-        msg: format!("Primitive is not a {type_name}"),
-    }
+    StdError::parse_err(type_name.clone(), format!("Primitive is not a {type_name}"))
 }
 
 impl From<String> for Primitive {
@@ -202,13 +199,10 @@ mod tests {
 
     #[test]
     fn test_parse_error() {
-        assert_eq!(
-            StdError::ParseErr {
-                target_type: "target_type".to_string(),
-                msg: "Primitive is not a target_type".to_string()
-            },
-            parse_error("target_type".to_string())
-        );
+        assert_eq!(StdError::parse_err(
+            "target_type".to_string(),
+            "Primitive is not a target_type".to_string()
+        ));
     }
 
     #[test]
