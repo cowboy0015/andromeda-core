@@ -235,9 +235,9 @@ fn execute_batch_mint(
     );
     ensure!(
         !tokens_to_mint.is_empty(),
-        ContractError::Std(cosmwasm_std::StdError::GenericErr {
-            msg: String::from("No tokens to mint")
-        })
+        ContractError::Std(cosmwasm_std::StdError::generic_err(String::from(
+            "No tokens to mint"
+        )))
     );
     for msg in tokens_to_mint {
         let ctx = ExecuteContext {

@@ -248,7 +248,7 @@ fn process_module_response<T>(
             if kind.contains("operation") {
                 Ok(None)
             } else {
-                Err(ContractError::Std(StdError::NotFound { kind }))
+                Err(ContractError::Std(StdError::not_found(kind)))
             }
         }
         Err(e) => Err(e.into()),

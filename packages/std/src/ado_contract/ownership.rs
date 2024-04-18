@@ -118,7 +118,7 @@ impl<'a> ADOContract<'a> {
         addr: &str,
     ) -> Result<bool, ContractError> {
         let owner = self.owner.load(storage)?;
-        Ok(addr == owner)
+        Ok(addr == owner.as_str())
     }
 
     /// Helper function to query if a given address is the current contract owner or operator.
