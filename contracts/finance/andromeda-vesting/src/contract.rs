@@ -514,7 +514,7 @@ fn execute_vote(
     );
     let msg: CosmosMsg = CosmosMsg::Gov(GovMsg::Vote {
         proposal_id,
-        vote: vote.clone(),
+        option: vote,
     });
     Ok(Response::new()
         .add_message(msg)

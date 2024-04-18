@@ -61,9 +61,7 @@ fn test_swap_and_forward_invalid_dex() {
 
     assert_eq!(
         res,
-        ContractError::Std(StdError::GenericErr {
-            msg: "Unsupported Dex".to_string()
-        })
+        ContractError::Std(StdError::generic_err("Unsupported Dex".to_string()))
     );
 }
 

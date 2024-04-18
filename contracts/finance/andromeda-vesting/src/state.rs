@@ -42,7 +42,7 @@ impl<'a> IndexList<Batch> for BatchIndexes<'a> {
     }
 }
 
-pub fn batches<'a>() -> IndexedMap<'a, u64, Batch, BatchIndexes<'a>> {
+pub fn batches<'a>() -> IndexedMap<u64, Batch, BatchIndexes<'a>> {
     let indexes = BatchIndexes {
         claim_time: MultiIndex::new(
             |_pk: &[u8], b: &Batch| {

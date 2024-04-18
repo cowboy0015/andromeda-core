@@ -4,7 +4,8 @@ use andromeda_std::{
     error::ContractError, os::aos_querier::AOSQuerier,
 };
 use cosmwasm_std::{
-    from_json, wasm_execute, Coin, Decimal, Reply, StdError, SubMsg, SubMsgResponse, SubMsgResult,
+    from_json, to_json_binary, wasm_execute, Coin, Decimal, Reply, StdError, SubMsg,
+    SubMsgResponse, SubMsgResult,
 };
 use serde::de::DeserializeOwned;
 
@@ -14,15 +15,16 @@ pub const MSG_FORWARD_ID: u64 = 2;
 // Adapted from: https://github.com/osmosis-labs/osmosis/blob/main/cosmwasm/contracts/crosschain-swaps/src/utils.rs#LL8C1-L23C2
 // Parses a swap reply to the correct message type
 pub(crate) fn parse_swap_reply<T: DeserializeOwned>(msg: Reply) -> Result<T, ContractError> {
-    let SubMsgResult::Ok(SubMsgResponse { data: Some(b), .. }) = msg.result else {
+    let SubMsgResult::Ok(SubMsgResponse { msg_responses, .. }) = msg.result else {
         return Err(ContractError::Std(StdError::generic_err(
             "failed to parse swaprouter response",
         )));
     };
 
-    let parsed = cw_utils::parse_execute_response_data(&b).map_err(|_e| {
-        ContractError::Std(StdError::generic_err("failed to parse swaprouter response"))
-    })?;
+    let parsed = cw_utils::parse_execute_response_data(&to_json_binary(&msg_responses).unwrap())
+        .map_err(|_e| {
+            ContractError::Std(StdError::generic_err("failed to parse swaprouter response"))
+        })?;
     let swap_response: T = from_json(parsed.data.unwrap_or_default())?;
     Ok(swap_response)
 }

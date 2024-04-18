@@ -34,7 +34,7 @@ impl<'a> IndexList<PathInfo> for PathIndices<'a> {
     }
 }
 
-pub fn paths<'a>() -> IndexedMap<'a, &'a (Addr, String), PathInfo, PathIndices<'a>> {
+pub fn paths<'a>() -> IndexedMap<&'a (Addr, String), PathInfo, PathIndices<'a>> {
     let indexes = PathIndices {
         address: MultiIndex::new(|_pk: &[u8], r| r.address.clone(), "path", "path_index"),
         parent: MultiIndex::new(

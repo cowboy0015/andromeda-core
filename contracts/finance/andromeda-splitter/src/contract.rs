@@ -172,7 +172,7 @@ fn execute_send(ctx: ExecuteContext) -> Result<Response, ContractError> {
         let mut vec_coin: Vec<Coin> = Vec::new();
         for (i, coin) in info.funds.clone().iter().enumerate() {
             let mut recip_coin: Coin = coin.clone();
-            recip_coin.amount = coin.amount * recipient_percent;
+            recip_coin.amount = coin.amount.mul_floor(recipient_percent);
             remainder_funds[i].amount = remainder_funds[i].amount.checked_sub(recip_coin.amount)?;
             vec_coin.push(recip_coin.clone());
             amp_funds.push(recip_coin);

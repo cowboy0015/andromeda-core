@@ -13,7 +13,7 @@ use andromeda_std::{
     ado_base::withdraw::{Withdrawal, WithdrawalType},
     error::ContractError,
 };
-use cosmwasm_std::attr;
+use cosmwasm_std::{attr, Binary};
 use cosmwasm_std::{
     coin, from_json,
     testing::{mock_env, mock_info},
@@ -750,6 +750,7 @@ fn test_withdraw_single_strategy() {
         }),
         gas_limit: None,
         reply_on: ReplyOn::Error,
+        payload: Binary::default(),
     };
     let expected = Response::default().add_submessage(withdraw_submsg);
 
@@ -858,6 +859,7 @@ fn test_query_strategy_balance() {
             .address
             .get_raw_address(&deps.as_ref())
             .unwrap()
+            .as_str()
     );
 }
 

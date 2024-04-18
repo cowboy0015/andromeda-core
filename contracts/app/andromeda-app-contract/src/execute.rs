@@ -104,6 +104,7 @@ fn generate_instantiate_msg(
                 label: format!("Instantiate: {ado_type}"),
             }),
             gas_limit: None,
+            payload: Binary::default(),
         }),
     }
 }
@@ -166,6 +167,7 @@ pub fn message(ctx: ExecuteContext, name: String, msg: Binary) -> Result<Respons
             contract_addr: addr.to_string(),
         }),
         gas_limit: None,
+        payload: Binary::default(),
     };
 
     Ok(Response::default()

@@ -55,7 +55,7 @@ fn test_register_user() {
     execute(deps.as_mut(), env.clone(), info.clone(), msg).unwrap();
 
     let saved = USERS.load(deps.as_ref().storage, username).unwrap();
-    assert_eq!(saved, sender);
+    assert_eq!(saved.as_str(), sender);
     let username_saved = ADDRESS_USERNAME
         .load(deps.as_ref().storage, sender)
         .unwrap();
@@ -69,7 +69,7 @@ fn test_register_user() {
     execute(deps.as_mut(), env, info, msg).unwrap();
 
     let saved = USERS.load(deps.as_ref().storage, new_username).unwrap();
-    assert_eq!(saved, sender);
+    assert_eq!(saved.as_str(), sender);
     let username_saved = ADDRESS_USERNAME
         .load(deps.as_ref().storage, sender)
         .unwrap();
@@ -94,7 +94,7 @@ fn test_register_user_duplicate() {
     execute(deps.as_mut(), env.clone(), info.clone(), msg.clone()).unwrap();
 
     let saved = USERS.load(deps.as_ref().storage, username).unwrap();
-    assert_eq!(saved, sender);
+    assert_eq!(saved.as_str(), sender);
     let username_saved = ADDRESS_USERNAME
         .load(deps.as_ref().storage, sender)
         .unwrap();
@@ -182,7 +182,7 @@ fn test_register_user_valid_cosmwasm_address_user() {
     instantiate_contract(deps.as_mut(), env.clone(), info.clone());
     execute(deps.as_mut(), env, info, msg).unwrap();
     let saved = USERS.load(deps.as_ref().storage, username).unwrap();
-    assert_eq!(saved, sender)
+    assert_eq!(saved.as_str(), sender)
 }
 
 #[test]
@@ -232,7 +232,7 @@ fn test_register_user_already_registered() {
 
     execute(deps.as_mut(), env, info, msg).unwrap();
     let addr = USERS.load(deps.as_ref().storage, new_username).unwrap();
-    assert_eq!(addr, sender);
+    assert_eq!(addr.as_str(), sender);
     let username = ADDRESS_USERNAME
         .load(deps.as_ref().storage, sender)
         .unwrap();
@@ -270,7 +270,7 @@ fn test_register_user_foreign_chain() {
     let info = mock_info(MOCK_FAKE_KERNEL_CONTRACT, &[]);
     execute(deps.as_mut(), env.clone(), info, msg).unwrap();
     let addr = USERS.load(deps.as_ref().storage, username).unwrap();
-    assert_eq!(addr, sender);
+    assert_eq!(addr.as_str(), sender);
 
     let msg = ExecuteMsg::RegisterUser {
         username: username.to_string(),
@@ -554,7 +554,7 @@ fn test_add_child() {
     )
     .unwrap();
 
-    assert_eq!(resolved_addr, sender)
+    assert_eq!(resolved_addr.as_str(), sender)
 }
 
 #[test]

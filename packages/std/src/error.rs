@@ -662,7 +662,8 @@ impl From<ParseBoolError> for ContractError {
 impl From<Cw721ContractError> for ContractError {
     fn from(err: Cw721ContractError) -> Self {
         match err {
-            Cw721ContractError::Std(std) => ContractError::Std(std),
+            Cw721ContractError::Std(std) => todo!(),
+            // Cw721ContractError::Std(std) => ContractError::Std(std),
             Cw721ContractError::Expired {} => ContractError::Expired {},
             Cw721ContractError::Ownership(_) => ContractError::Unauthorized {},
             Cw721ContractError::Claimed {} => ContractError::Claimed {},

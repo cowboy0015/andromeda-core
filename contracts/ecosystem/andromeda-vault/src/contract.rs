@@ -270,7 +270,7 @@ pub fn withdraw_vault(
                             msg: Some("Percent must be non-zero".to_string()),
                         }
                     );
-                    let amount = balance * percent;
+                    let amount = balance.mul_floor(percent);
                     withdrawal_amount.push(coin(amount.u128(), denom.clone()));
                     BALANCES.save(
                         deps.storage,
@@ -325,6 +325,7 @@ pub fn withdraw_strategy(
         }),
         gas_limit: None,
         reply_on: ReplyOn::Error,
+        payload: Binary::default(),
     };
 
     Ok(res.add_submessage(withdraw_submsg))
@@ -367,7 +368,7 @@ fn execute_update_strategy(
         .query_wasm_smart(strategy_addr.clone(), &QueryMsg::Owner {})?;
 
     ensure!(
-        strategy_owner.owner == env.contract.address,
+        strategy_owner.owner == env.contract.address.as_str(),
         ContractError::NotAssignedOperator {
             msg: Some("Vault contract is not an operator for the given address".to_string()),
         }

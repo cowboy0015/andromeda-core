@@ -326,6 +326,7 @@ fn test_create_batch_and_delegate() {
 
     deps.querier
         .base
+        .bank
         .update_balance(MOCK_CONTRACT_ADDR, coins(100, "uusd"));
 
     let msg = ExecuteMsg::CreateBatch {
@@ -511,6 +512,7 @@ fn test_claim_batch_all_funds_delegated() {
 
     deps.querier
         .base
+        .bank
         .update_balance(MOCK_CONTRACT_ADDR, coins(100, "uusd"));
 
     // Delegate tokens
@@ -555,6 +557,7 @@ fn test_claim_batch_some_funds_delegated() {
 
     deps.querier
         .base
+        .bank
         .update_balance(MOCK_CONTRACT_ADDR, coins(100, "uusd"));
 
     // Delegate tokens
@@ -571,6 +574,7 @@ fn test_claim_batch_some_funds_delegated() {
 
     deps.querier
         .base
+        .bank
         .update_balance(MOCK_CONTRACT_ADDR, coins(30, "uusd"));
 
     // Claim batch.
@@ -616,6 +620,7 @@ fn test_claim_batch_single_claim() {
 
     deps.querier
         .base
+        .bank
         .update_balance(MOCK_CONTRACT_ADDR, coins(100, "uusd"));
 
     // Skip time.
@@ -698,6 +703,7 @@ fn test_claim_batch_not_nice_numbers_single_release() {
 
     deps.querier
         .base
+        .bank
         .update_balance(MOCK_CONTRACT_ADDR, coins(7, "uusd"));
 
     // Skip time.
@@ -760,6 +766,7 @@ fn test_claim_batch_not_nice_numbers_multiple_releases() {
 
     deps.querier
         .base
+        .bank
         .update_balance(MOCK_CONTRACT_ADDR, coins(14, "uusd"));
 
     // Skip time.
@@ -822,6 +829,7 @@ fn test_claim_batch_middle_of_interval() {
 
     deps.querier
         .base
+        .bank
         .update_balance(MOCK_CONTRACT_ADDR, coins(100, "uusd"));
 
     // Claim batch.
@@ -889,6 +897,7 @@ fn test_claim_batch_multiple_claims() {
 
     deps.querier
         .base
+        .bank
         .update_balance(MOCK_CONTRACT_ADDR, coins(100, "uusd"));
 
     let mut env = mock_env();
@@ -983,6 +992,7 @@ fn test_claim_batch_all_releases() {
 
     deps.querier
         .base
+        .bank
         .update_balance(MOCK_CONTRACT_ADDR, coins(100, "uusd"));
 
     let mut env = mock_env();
@@ -1050,6 +1060,7 @@ fn test_claim_batch_too_high_of_claim() {
 
     deps.querier
         .base
+        .bank
         .update_balance(MOCK_CONTRACT_ADDR, coins(100, "uusd"));
 
     let mut env = mock_env();
@@ -1141,6 +1152,7 @@ fn test_claim_all() {
 
     deps.querier
         .base
+        .bank
         .update_balance(MOCK_CONTRACT_ADDR, coins(400, "uusd"));
 
     // Speed up time.
@@ -1306,6 +1318,7 @@ fn test_delegate() {
 
     deps.querier
         .base
+        .bank
         .update_balance(MOCK_CONTRACT_ADDR, coins(100, "uusd"));
 
     let info = mock_info("owner", &[]);
@@ -1342,6 +1355,7 @@ fn test_delegate_more_than_balance() {
 
     deps.querier
         .base
+        .bank
         .update_balance(MOCK_CONTRACT_ADDR, coins(100, "uusd"));
 
     let info = mock_info("owner", &[]);
@@ -1684,7 +1698,7 @@ fn test_vote() {
         Response::new()
             .add_message(CosmosMsg::Gov(GovMsg::Vote {
                 proposal_id: 1,
-                vote: VoteOption::Yes
+                option: VoteOption::Yes
             }))
             .add_attribute("action", "vote")
             .add_attribute("proposal_id", "1")

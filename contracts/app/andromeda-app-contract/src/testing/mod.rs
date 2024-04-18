@@ -17,7 +17,7 @@ use cosmwasm_std::{
     testing::{mock_env, mock_info},
     to_json_binary, Addr, CosmosMsg, Empty, ReplyOn, Response, StdError, SubMsg, WasmMsg,
 };
-use cosmwasm_std::{Binary, Event, Reply, SubMsgResponse, SubMsgResult};
+use cosmwasm_std::{Binary, Event, MsgResponse, Reply, SubMsgResponse, SubMsgResult};
 
 #[test]
 fn test_empty_instantiation() {
@@ -67,6 +67,7 @@ fn test_instantiation() {
         }),
         reply_on: ReplyOn::Always,
         gas_limit: None,
+        payload: Binary::default(),
     };
     let sender = info.sender;
     let register_submsg: SubMsg<Empty> = SubMsg {
@@ -82,6 +83,7 @@ fn test_instantiation() {
         }),
         reply_on: ReplyOn::Error,
         gas_limit: None,
+        payload: Binary::default(),
     };
     let assign_msg: SubMsg<Empty> = SubMsg {
         id: ReplyId::AssignApp.repr(),
@@ -92,6 +94,7 @@ fn test_instantiation() {
         }),
         reply_on: ReplyOn::Error,
         gas_limit: None,
+        payload: Binary::default(),
     };
     let expected = Response::new()
         .add_submessage(register_submsg)
@@ -242,6 +245,7 @@ fn test_add_app_component() {
         }),
         reply_on: ReplyOn::Always,
         gas_limit: None,
+        payload: Binary::default(),
     };
     let expected = Response::new()
         .add_submessage(inst_submsg)
@@ -306,9 +310,9 @@ fn test_claim_ownership_not_found() {
 
     let err = execute(deps.as_mut(), env, info, msg).unwrap_err();
     assert_eq!(
-        ContractError::Std(StdError::NotFound {
-            kind: "type: cosmwasm_std::addresses::Addr; key: [00, 0D, 61, 64, 6F, 5F, 61, 64, 64, 72, 65, 73, 73, 65, 73, 74, 6F, 6B, 65, 6E]".to_string()
-        }),
+        ContractError::Std(StdError::not_found( 
+            "type: cosmwasm_std::addresses::Addr; key: [00, 0D, 61, 64, 6F, 5F, 61, 64, 64, 72, 65, 73, 73, 65, 73, 74, 6F, 6B, 65, 6E]".to_string()
+        )),
         err
     );
 }
@@ -425,6 +429,7 @@ fn test_claim_ownership() {
         }),
         reply_on: ReplyOn::Error,
         gas_limit: None,
+        payload: Binary::default(),
     };
     let expected = Response::new()
         .add_submessage(exec_submsg)
@@ -480,9 +485,9 @@ fn test_proxy_message_not_found() {
 
     let err = execute(deps.as_mut(), env, info, msg).unwrap_err();
     assert_eq!(
-        ContractError::Std(StdError::NotFound {
-            kind: "type: cosmwasm_std::addresses::Addr; key: [00, 0D, 61, 64, 6F, 5F, 61, 64, 64, 72, 65, 73, 73, 65, 73, 74, 6F, 6B, 65, 6E]".to_string()
-        }),
+        ContractError::Std(StdError::not_found( 
+            "type: cosmwasm_std::addresses::Addr; key: [00, 0D, 61, 64, 6F, 5F, 61, 64, 64, 72, 65, 73, 73, 65, 73, 74, 6F, 6B, 65, 6E]".to_string()
+        )),
         err
     );
 }
@@ -524,6 +529,7 @@ fn test_proxy_message() {
         }),
         reply_on: ReplyOn::Error,
         gas_limit: None,
+        payload: Binary::default(),
     };
     let expected = Response::new()
         .add_submessage(exec_submsg)
@@ -589,9 +595,7 @@ fn test_update_address_not_found() {
 
     let err = execute(deps.as_mut(), env, info, msg).unwrap_err();
     assert_eq!(
-        ContractError::Std(StdError::NotFound {
-            kind: "type: cosmwasm_std::addresses::Addr; key: [00, 0D, 61, 64, 6F, 5F, 61, 64, 64, 72, 65, 73, 73, 65, 73, 74, 6F, 6B, 65, 6E]".to_string()
-        }),
+        ContractError::Std(StdError::not_found("type: cosmwasm_std::addresses::Addr; key: [00, 0D, 61, 64, 6F, 5F, 61, 64, 64, 72, 65, 73, 73, 65, 73, 74, 6F, 6B, 65, 6E]".to_string())),
         err
     );
 }
@@ -721,9 +725,12 @@ fn test_reply_assign_app() {
     let mock_reply = Reply {
         id: component_idx,
         result: SubMsgResult::Ok(SubMsgResponse {
-            data: Some(Binary::from_base64(reply_resp).unwrap()),
+            msg_responses: vec![MsgResponse { type_url: String::default(), value:  Binary::from_base64(reply_resp).unwrap()}],
             events: vec![mock_reply_event],
+            data: Some(Binary::from_base64(reply_resp).unwrap()),
         }),
+        payload: Binary::default(),
+        gas_used: u64::default(),
     };
 
     let res = reply(deps.as_mut(), env.clone(), mock_reply).unwrap();
@@ -756,6 +763,7 @@ fn test_reply_assign_app() {
         }),
         reply_on: ReplyOn::Error,
         gas_limit: None,
+        payload: Binary::default(),
     };
     // let expected = Response::new().add_submessage(exec_submsg);
     let new_expected = Response::new().add_submessage(new_exec_submsg);
