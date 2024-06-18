@@ -14,10 +14,11 @@ use cosmwasm_schema::cw_serde;
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    ensure, from_json, to_json_binary, Addr, Binary, Coin, Deps, DepsMut, Empty, Env,
+    ensure, from_json, to_json_binary, Addr, Binary, Coin, CosmosMsg, Deps, DepsMut, Empty, Env,
     Ibc3ChannelOpenResponse, IbcBasicResponse, IbcChannel, IbcChannelCloseMsg,
-    IbcChannelConnectMsg, IbcChannelOpenMsg, IbcOrder, IbcPacketAckMsg, IbcPacketReceiveMsg,
-    IbcPacketTimeoutMsg, IbcReceiveResponse, MessageInfo, SubMsg, Timestamp, WasmMsg,
+    IbcChannelConnectMsg, IbcChannelOpenMsg, IbcMsg, IbcOrder, IbcPacketAckMsg,
+    IbcPacketReceiveMsg, IbcPacketTimeoutMsg, IbcReceiveResponse, IbcTimeout, MessageInfo, SubMsg,
+    Timestamp, WasmMsg,
 };
 use itertools::Itertools;
 use sha256::digest;
@@ -133,7 +134,7 @@ pub fn do_ibc_packet_receive(
     );
     let msg: IbcExecuteMsg = from_json(&msg.packet.data)?;
     let execute_env = ExecuteContext {
-        env,
+        env: env.clone(),
         deps,
         info: MessageInfo {
             funds: vec![],
@@ -159,6 +160,17 @@ pub fn do_ibc_packet_receive(
         } => ibc_create_ado(execute_env, owner, ado_type, instantiation_msg),
         IbcExecuteMsg::RegisterUsername { username, address } => {
             ibc_register_username(execute_env, username, address)
+        }
+        // Handle the ack after sending the funds
+        IbcExecuteMsg::FundsThenExecute { recipient, message } => {
+            let ibc_packet = IbcMsg::SendPacket {
+                channel_id: channel,
+                data: to_json_binary(&IbcExecuteMsg::SendMessage { recipient, message })?,
+                timeout: IbcTimeout::with_timestamp(env.block.time.plus_seconds(60)),
+            };
+            Ok(IbcReceiveResponse::new()
+                .set_ack(make_ack_success())
+                .add_message(CosmosMsg::Ibc(ibc_packet)))
         }
     }
 }

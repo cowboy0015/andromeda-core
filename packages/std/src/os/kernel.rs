@@ -136,4 +136,8 @@ pub enum IbcExecuteMsg {
         username: String,
         address: String,
     },
+    FundsThenExecute {
+        recipient: AndrAddr,
+        message: Binary,
+    },
 }
