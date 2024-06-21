@@ -88,6 +88,7 @@ pub fn mock_app_instantiate_msg(
         kernel_address: kernel_address.into(),
         owner,
         chain_info: None,
+        app_ownership: None,
     }
 }
 

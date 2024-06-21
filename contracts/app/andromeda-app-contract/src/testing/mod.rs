@@ -29,6 +29,7 @@ fn test_empty_instantiation() {
         kernel_address: MOCK_KERNEL_CONTRACT.to_string(),
         owner: None,
         chain_info: None,
+        app_ownership: None,
     };
     let info = mock_info("creator", &[]);
 
@@ -153,6 +154,7 @@ fn test_add_app_component_unauthorized() {
         kernel_address: MOCK_KERNEL_CONTRACT.to_string(),
         owner: None,
         chain_info: None,
+        app_ownership: None,
     };
 
     instantiate(deps.as_mut(), env.clone(), info, inst_msg).unwrap();
@@ -272,6 +274,7 @@ fn test_claim_ownership_unauth() {
         owner: None,
         kernel_address: MOCK_KERNEL_CONTRACT.to_string(),
         chain_info: None,
+        app_ownership: None,
     };
 
     instantiate(deps.as_mut(), env.clone(), info, inst_msg).unwrap();
@@ -297,6 +300,7 @@ fn test_claim_ownership_not_found() {
         owner: None,
         kernel_address: MOCK_KERNEL_CONTRACT.to_string(),
         chain_info: None,
+        app_ownership: None,
     };
 
     instantiate(deps.as_mut(), env.clone(), info.clone(), inst_msg).unwrap();
@@ -321,6 +325,7 @@ fn test_claim_ownership_empty() {
         owner: None,
         kernel_address: MOCK_KERNEL_CONTRACT.to_string(),
         chain_info: None,
+        app_ownership: None,
     };
 
     instantiate(deps.as_mut(), env.clone(), info.clone(), inst_msg).unwrap();
@@ -345,6 +350,7 @@ fn test_claim_ownership_all() {
         owner: None,
         kernel_address: MOCK_KERNEL_CONTRACT.to_string(),
         chain_info: None,
+        app_ownership: None,
     };
 
     instantiate(deps.as_mut(), env.clone(), info.clone(), inst_msg).unwrap();
@@ -383,6 +389,7 @@ fn test_claim_ownership() {
         owner: None,
         kernel_address: MOCK_KERNEL_CONTRACT.to_string(),
         chain_info: None,
+        app_ownership: None,
     };
 
     instantiate(deps.as_mut(), env.clone(), info.clone(), inst_msg).unwrap();
@@ -441,6 +448,7 @@ fn test_proxy_message_unauth() {
         owner: None,
         kernel_address: MOCK_KERNEL_CONTRACT.to_string(),
         chain_info: None,
+        app_ownership: None,
     };
 
     instantiate(deps.as_mut(), env.clone(), info, inst_msg).unwrap();
@@ -466,6 +474,7 @@ fn test_proxy_message_not_found() {
         owner: None,
         kernel_address: MOCK_KERNEL_CONTRACT.to_string(),
         chain_info: None,
+        app_ownership: None,
     };
 
     instantiate(deps.as_mut(), env.clone(), info.clone(), inst_msg).unwrap();
@@ -491,6 +500,7 @@ fn test_proxy_message() {
         owner: None,
         kernel_address: MOCK_KERNEL_CONTRACT.to_string(),
         chain_info: None,
+        app_ownership: None,
     };
     ADO_ADDRESSES
         .save(
@@ -539,6 +549,7 @@ fn test_update_address_unauth() {
         owner: None,
         kernel_address: MOCK_KERNEL_CONTRACT.to_string(),
         chain_info: None,
+        app_ownership: None,
     };
 
     ADO_ADDRESSES
@@ -571,6 +582,7 @@ fn test_update_address_not_found() {
         owner: None,
         kernel_address: MOCK_KERNEL_CONTRACT.to_string(),
         chain_info: None,
+        app_ownership: None,
     };
 
     instantiate(deps.as_mut(), env.clone(), info.clone(), inst_msg).unwrap();
@@ -598,6 +610,7 @@ fn test_update_address() {
         owner: None,
         kernel_address: MOCK_KERNEL_CONTRACT.to_string(),
         chain_info: None,
+        app_ownership: None,
     };
 
     ADO_ADDRESSES
@@ -632,6 +645,7 @@ fn test_add_app_component_limit() {
         kernel_address: MOCK_KERNEL_CONTRACT.to_string(),
         owner: None,
         chain_info: None,
+        app_ownership: None,
     };
 
     // we can just call .unwrap() to assert this was a success

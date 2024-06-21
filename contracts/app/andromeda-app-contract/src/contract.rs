@@ -36,8 +36,13 @@ pub fn instantiate(
         msg.app_components.len() <= 50,
         ContractError::TooManyAppComponents {}
     );
-
-    let sender = msg.owner.clone().unwrap_or(info.sender.to_string());
+    // Defaults to setting the message sender / owner as sender which will be set as the components' admin
+    let app_ownership = msg.app_ownership.unwrap_or(false);
+    let sender = if app_ownership {
+        env.contract.address.to_string()
+    } else {
+        msg.owner.clone().unwrap_or(info.sender.to_string())
+    };
     let mut resp = ADOContract::default()
         .instantiate(
             deps.storage,

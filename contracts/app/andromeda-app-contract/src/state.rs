@@ -199,6 +199,7 @@ pub fn create_cross_chain_message(
         app_components: new_components,
         name: app_name,
         chain_info: None,
+        app_ownership: None,
         kernel_address: channel_info.kernel_address,
     };
 

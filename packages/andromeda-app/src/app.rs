@@ -293,6 +293,8 @@ pub struct InstantiateMsg {
     pub app_components: Vec<AppComponent>,
     pub name: String,
     pub chain_info: Option<Vec<ChainInfo>>,
+    /// When set to true, makes the App admin of the components. Otherwise the message sender / owner is set as admin
+    pub app_ownership: Option<bool>,
 }
 
 #[andr_exec]
