@@ -1,7 +1,7 @@
 #![cfg(not(target_arch = "wasm32"))]
 
 use andromeda_app::app::AppComponent;
-use andromeda_app_contract::mock::{mock_andromeda_app, mock_claim_ownership_msg, MockAppContract};
+use andromeda_app_contract::mock::{mock_andromeda_app, MockAppContract};
 use andromeda_auction::mock::{
     mock_andromeda_auction, mock_auction_instantiate_msg, mock_place_bid, mock_start_auction,
     mock_update_auction, MockAuction,
@@ -92,15 +92,6 @@ fn test_auction_app_modules() {
         andr.kernel.addr(),
         Some(owner.to_string()),
     );
-
-    router
-        .execute_contract(
-            owner.clone(),
-            Addr::unchecked(app.addr().clone()),
-            &mock_claim_ownership_msg(None),
-            &[],
-        )
-        .unwrap();
 
     // Mint Tokens
     let cw721: MockCW721 = app.query_ado_by_component_name(&router, cw721_component.name);
@@ -310,15 +301,6 @@ fn test_auction_app_recipient() {
         andr.kernel.addr(),
         Some(owner.to_string()),
     );
-
-    router
-        .execute_contract(
-            owner.clone(),
-            Addr::unchecked(app.addr().clone()),
-            &mock_claim_ownership_msg(None),
-            &[],
-        )
-        .unwrap();
 
     // Mint Tokens
     let cw721: MockCW721 = app.query_ado_by_component_name(&router, cw721_component.name);

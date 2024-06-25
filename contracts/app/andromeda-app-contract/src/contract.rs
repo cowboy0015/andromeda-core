@@ -43,6 +43,7 @@ pub fn instantiate(
     } else {
         msg.owner.clone().unwrap_or(info.sender.to_string())
     };
+
     let mut resp = ADOContract::default()
         .instantiate(
             deps.storage,

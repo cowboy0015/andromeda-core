@@ -36,6 +36,30 @@ impl MockAppContract {
         MockAppContract(Addr::unchecked(addr))
     }
 
+    pub fn instantiate_app_ownership(
+        code_id: u64,
+        sender: &Addr,
+        app: &mut MockApp,
+        name: impl Into<String>,
+        app_components: Vec<AppComponent>,
+        kernel_address: impl Into<String>,
+        owner: Option<String>,
+    ) -> MockAppContract {
+        let msg =
+            mock_app_instantiate_msg_app_ownership(name, app_components, kernel_address, owner);
+        let addr = app
+            .instantiate_contract(
+                code_id,
+                sender.clone(),
+                &msg,
+                &[],
+                "App Contract",
+                Some(sender.to_string()),
+            )
+            .unwrap();
+        MockAppContract(Addr::unchecked(addr))
+    }
+
     pub fn execute_claim_ownership(
         &self,
         app: &mut MockApp,
@@ -89,6 +113,22 @@ pub fn mock_app_instantiate_msg(
         owner,
         chain_info: None,
         app_ownership: None,
+    }
+}
+
+pub fn mock_app_instantiate_msg_app_ownership(
+    name: impl Into<String>,
+    app_components: Vec<AppComponent>,
+    kernel_address: impl Into<String>,
+    owner: Option<String>,
+) -> InstantiateMsg {
+    InstantiateMsg {
+        app_components,
+        name: name.into(),
+        kernel_address: kernel_address.into(),
+        owner,
+        chain_info: None,
+        app_ownership: Some(true),
     }
 }
 

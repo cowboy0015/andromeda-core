@@ -2,7 +2,7 @@
 
 use andromeda_app::app::AppComponent;
 use andromeda_app_contract::mock::{mock_andromeda_app, MockAppContract};
-use andromeda_cw721::mock::{mock_andromeda_cw721, mock_cw721_instantiate_msg};
+use andromeda_cw721::mock::{mock_andromeda_cw721, mock_cw721_instantiate_msg, MockCW721};
 use andromeda_std::os::vfs::convert_component_name;
 use andromeda_testing::{mock::mock_app, mock_builder::MockAndromedaBuilder, MockContract};
 use cosmwasm_std::{coin, to_json_binary};
@@ -37,6 +37,11 @@ fn test_app() {
         "cw721".to_string(),
         to_json_binary(&cw721_init_msg).unwrap(),
     );
+    let cw721_component_app2 = AppComponent::new(
+        "cw721-app2".to_string(),
+        "cw721".to_string(),
+        to_json_binary(&cw721_init_msg).unwrap(),
+    );
     let cw721_component_ref = AppComponent::new(
         "cw721-ref".to_string(),
         "cw721".to_string(),
@@ -44,7 +49,7 @@ fn test_app() {
     );
 
     // Create App
-    let app_components = vec![cw721_component, cw721_component_ref];
+    let app_components = vec![cw721_component.clone(), cw721_component_ref];
     let app_code_id = andr.get_code_id(&mut router, "app-contract");
     let app = MockAppContract::instantiate(
         app_code_id,
@@ -55,9 +60,32 @@ fn test_app() {
         andr.kernel.addr(),
         None,
     );
+    // Set this app to claim ownership of its components
+    let app_components_2: Vec<AppComponent> = vec![cw721_component_app2.clone()];
+    let app_code_id = andr.get_code_id(&mut router, "app-contract");
+    let app_2 = MockAppContract::instantiate_app_ownership(
+        app_code_id,
+        owner,
+        &mut router,
+        app_name,
+        app_components_2.clone(),
+        andr.kernel.addr(),
+        None,
+    );
 
     let components = app.query_components(&router);
     assert_eq!(components, app_components);
+
+    let cw721: MockCW721 = app.query_ado_by_component_name(&router, cw721_component.name);
+    let cw721_owner = cw721.query_owner(&router);
+    assert_eq!(cw721_owner.owner, owner.clone().into_string());
+
+    let cw721_app2: MockCW721 =
+        app_2.query_ado_by_component_name(&router, cw721_component_app2.name);
+    let cw721_2_owner = cw721_app2.query_owner(&router);
+    let app_2_address = app_2.addr().clone().into_string();
+
+    assert_eq!(cw721_2_owner.owner, app_2_address);
 
     let owner_str = owner.to_string();
     let cw721_component_with_symlink = AppComponent::symlink(

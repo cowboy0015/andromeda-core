@@ -4,7 +4,7 @@ use crate::contract::{execute, instantiate, query};
 use andromeda_non_fungible_tokens::cw721::{
     ExecuteMsg, InstantiateMsg, MintMsg, QueryMsg, TokenExtension, TransferAgreement,
 };
-use andromeda_std::amp::addresses::AndrAddr;
+use andromeda_std::{ado_base::ownership::ContractOwnerResponse, amp::addresses::AndrAddr};
 use andromeda_testing::{
     mock::MockApp,
     mock_ado,
@@ -81,6 +81,10 @@ impl MockCW721 {
         self.query::<Addr>(app, mock_cw721_minter_query())
     }
 
+    pub fn query_owner(&self, app: &MockApp) -> ContractOwnerResponse {
+        self.query::<ContractOwnerResponse>(app, mock_cw721_owner())
+    }
+
     pub fn query_owner_of(&self, app: &MockApp, token_id: impl Into<String>) -> Addr {
         Addr::unchecked(
             self.query::<OwnerOfResponse>(app, mock_cw721_owner_of(token_id.into(), None))
@@ -119,6 +123,10 @@ pub fn mock_cw721_owner_of(token_id: String, include_expired: Option<bool>) -> Q
         token_id,
         include_expired,
     }
+}
+
+pub fn mock_cw721_owner() -> QueryMsg {
+    QueryMsg::Owner {}
 }
 
 pub fn mock_mint_msg(
