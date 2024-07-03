@@ -1,3 +1,4 @@
+use cw_utils::parse_reply_execute_data;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -7,9 +8,9 @@ use cosmwasm_std::entry_point;
 use cosmwasm_std::{
     attr, from_json, to_json_binary, BankMsg, Binary, CosmosMsg, Deps, DepsMut, Env,
     Ibc3ChannelOpenResponse, IbcBasicResponse, IbcChannel, IbcChannelCloseMsg,
-    IbcChannelConnectMsg, IbcChannelOpenMsg, IbcEndpoint, IbcOrder, IbcPacket, IbcPacketAckMsg,
-    IbcPacketReceiveMsg, IbcPacketTimeoutMsg, IbcReceiveResponse, Reply, Response, SubMsg,
-    SubMsgResult, Uint128, WasmMsg,
+    IbcChannelConnectMsg, IbcChannelOpenMsg, IbcEndpoint, IbcMsg, IbcOrder, IbcPacket,
+    IbcPacketAckMsg, IbcPacketReceiveMsg, IbcPacketTimeoutMsg, IbcReceiveResponse, IbcTimeout,
+    Reply, Response, SubMsg, SubMsgResult, Timestamp, Uint128, WasmMsg,
 };
 
 use crate::amount::Amount;
@@ -22,6 +23,49 @@ use cw20::Cw20ExecuteMsg;
 
 pub const ICS20_VERSION: &str = "ics20-1";
 pub const ICS20_ORDERING: IbcOrder = IbcOrder::Unordered;
+
+#[cw_serde]
+pub enum AcknowledgementMsg<S> {
+    Ok(S),
+    Error(String),
+}
+
+#[cw_serde]
+pub struct MessageReceptionResponse {
+    pub success: bool,
+}
+
+#[cw_serde]
+pub enum IbcExecuteMsg {
+    Ics20Packet {
+        /// amount of tokens to transfer is encoded as a string, but limited to u64 max
+        amount: Uint128,
+        /// the token denomination to be transferred
+        denom: String,
+        /// the recipient address on the destination chain
+        receiver: String,
+        /// the sender address
+        sender: String,
+        /// optional memo for the IBC transfer
+        #[serde(skip_serializing_if = "Option::is_none")]
+        memo: Option<String>,
+        // Binary message to be executed on target chain
+        #[serde(skip_serializing_if = "Option::is_none")]
+        // If messeage is Some, trigger ConfirmedAferFunds flow, if not proceed like normal ics20
+        message: Option<Binary>,
+    },
+    ConfirmedAfterFunds {
+        recipient: String,
+        message: Binary,
+    },
+}
+
+#[cw_serde]
+#[derive(Eq)]
+pub struct MessageRecipient {
+    pub message: Binary,
+    pub recipient: String,
+}
 
 /// The format for sending an ics20 packet.
 /// Proto defined here: https://github.com/cosmos/cosmos-sdk/blob/v0.42.0/proto/ibc/applications/transfer/v1/transfer.proto#L11-L20
@@ -39,16 +83,25 @@ pub struct Ics20Packet {
     /// optional memo for the IBC transfer
     #[serde(skip_serializing_if = "Option::is_none")]
     pub memo: Option<String>,
+    // Binary message to be executed on target chain
+    pub message_recipient: Option<MessageRecipient>,
 }
 
 impl Ics20Packet {
-    pub fn new<T: Into<String>>(amount: Uint128, denom: T, sender: &str, receiver: &str) -> Self {
+    pub fn new<T: Into<String>>(
+        amount: Uint128,
+        denom: T,
+        sender: &str,
+        receiver: &str,
+        message_recipient: Option<MessageRecipient>,
+    ) -> Self {
         Ics20Packet {
             denom: denom.into(),
             amount,
             sender: sender.to_string(),
             receiver: receiver.to_string(),
             memo: None,
+            message_recipient,
         }
     }
 
@@ -93,7 +146,16 @@ const ACK_FAILURE_ID: u64 = 0xfa17;
 pub fn reply(deps: DepsMut, _env: Env, reply: Reply) -> Result<Response, ContractError> {
     match reply.id {
         RECEIVE_ID => match reply.result {
-            SubMsgResult::Ok(_) => Ok(Response::new()),
+            SubMsgResult::Ok(_) => {
+                let execute_data = parse_reply_execute_data(reply)
+                    .map_err(|_res| ContractError::Unauthorized {})?;
+                let message_recepiton_response: MessageReceptionResponse =
+                    from_json(execute_data.data.unwrap_or_default())?;
+
+                let ack = AcknowledgementMsg::Ok(message_recepiton_response);
+
+                Ok(Response::new().set_data(to_json_binary(&ack)?))
+            }
             SubMsgResult::Err(err) => {
                 // Important design note:  with ibcv2 and wasmd 0.22 we can implement this all much easier.
                 // No reply needed... the receive function and submessage should return error on failure and all
@@ -243,40 +305,84 @@ fn do_ibc_packet_receive(
     deps: DepsMut,
     packet: &IbcPacket,
 ) -> Result<IbcReceiveResponse, ContractError> {
-    let msg: Ics20Packet = from_json(&packet.data)?;
-    let channel = packet.dest.channel_id.clone();
+    let msg: IbcExecuteMsg = from_json(&packet.data)?;
+    match msg {
+        IbcExecuteMsg::Ics20Packet {
+            amount,
+            denom,
+            receiver,
+            sender,
+            memo,
+            message,
+        } => {
+            let channel = packet.dest.channel_id.clone();
+            // If the token originated on the remote chain, it looks like "ucosm".
+            // If it originated on our chain, it looks like "port/channel/ucosm".
+            let denom = parse_voucher_denom(&denom, &packet.src)?;
 
-    // If the token originated on the remote chain, it looks like "ucosm".
-    // If it originated on our chain, it looks like "port/channel/ucosm".
-    let denom = parse_voucher_denom(&msg.denom, &packet.src)?;
+            // make sure we have enough balance for this
+            reduce_channel_balance(deps.storage, &channel, denom, amount)?;
 
-    // make sure we have enough balance for this
-    reduce_channel_balance(deps.storage, &channel, denom, msg.amount)?;
+            // we need to save the data to update the balances in reply
+            let reply_args = ReplyArgs {
+                channel,
+                denom: denom.to_string(),
+                amount,
+            };
+            REPLY_ARGS.save(deps.storage, &reply_args)?;
 
-    // we need to save the data to update the balances in reply
-    let reply_args = ReplyArgs {
-        channel,
-        denom: denom.to_string(),
-        amount: msg.amount,
-    };
-    REPLY_ARGS.save(deps.storage, &reply_args)?;
+            let to_send = Amount::from_parts(denom.to_string(), amount);
+            let gas_limit = check_gas_limit(deps.as_ref(), &to_send)?;
+            let send = send_amount(to_send, receiver.clone());
+            let mut submsg = SubMsg::reply_on_error(send, RECEIVE_ID);
+            submsg.gas_limit = gas_limit;
 
-    let to_send = Amount::from_parts(denom.to_string(), msg.amount);
-    let gas_limit = check_gas_limit(deps.as_ref(), &to_send)?;
-    let send = send_amount(to_send, msg.receiver.clone());
-    let mut submsg = SubMsg::reply_on_error(send, RECEIVE_ID);
-    submsg.gas_limit = gas_limit;
+            let res = IbcReceiveResponse::new()
+                .add_submessage(submsg)
+                .add_attribute("action", "receive")
+                .add_attribute("sender", sender)
+                .add_attribute("receiver", receiver)
+                .add_attribute("denom", denom)
+                .add_attribute("amount", amount)
+                .add_attribute("success", "true");
 
-    let res = IbcReceiveResponse::new()
-        .add_submessage(submsg)
-        .add_attribute("action", "receive")
-        .add_attribute("sender", msg.sender)
-        .add_attribute("receiver", msg.receiver)
-        .add_attribute("denom", denom)
-        .add_attribute("amount", msg.amount)
-        .add_attribute("success", "true");
+            Ok(res)
+        }
+        IbcExecuteMsg::ConfirmedAfterFunds { message, recipient } => todo!(),
+    }
+    // let channel = packet.dest.channel_id.clone();
 
-    Ok(res)
+    // // If the token originated on the remote chain, it looks like "ucosm".
+    // // If it originated on our chain, it looks like "port/channel/ucosm".
+    // let denom = parse_voucher_denom(&msg.denom, &packet.src)?;
+
+    // // make sure we have enough balance for this
+    // reduce_channel_balance(deps.storage, &channel, denom, msg.amount)?;
+
+    // // we need to save the data to update the balances in reply
+    // let reply_args = ReplyArgs {
+    //     channel,
+    //     denom: denom.to_string(),
+    //     amount: msg.amount,
+    // };
+    // REPLY_ARGS.save(deps.storage, &reply_args)?;
+
+    // let to_send = Amount::from_parts(denom.to_string(), msg.amount);
+    // let gas_limit = check_gas_limit(deps.as_ref(), &to_send)?;
+    // let send = send_amount(to_send, msg.receiver.clone());
+    // let mut submsg = SubMsg::reply_on_error(send, RECEIVE_ID);
+    // submsg.gas_limit = gas_limit;
+
+    // let res = IbcReceiveResponse::new()
+    //     .add_submessage(submsg)
+    //     .add_attribute("action", "receive")
+    //     .add_attribute("sender", msg.sender)
+    //     .add_attribute("receiver", msg.receiver)
+    //     .add_attribute("denom", denom)
+    //     .add_attribute("amount", msg.amount)
+    //     .add_attribute("success", "true");
+
+    // Ok(res)
 }
 
 fn check_gas_limit(deps: Deps, amount: &Amount) -> Result<Option<u64>, ContractError> {
@@ -301,7 +407,7 @@ fn check_gas_limit(deps: Deps, amount: &Amount) -> Result<Option<u64>, ContractE
 /// check if success or failure and update balance, or return funds
 pub fn ibc_packet_ack(
     deps: DepsMut,
-    _env: Env,
+    env: Env,
     msg: IbcPacketAckMsg,
 ) -> Result<IbcBasicResponse, ContractError> {
     // Design decision: should we trap error like in receive?
@@ -309,7 +415,7 @@ pub fn ibc_packet_ack(
     // retried again and again. is that good?
     let ics20msg: Ics20Ack = from_json(&msg.acknowledgement.data)?;
     match ics20msg {
-        Ics20Ack::Result(_) => on_packet_success(deps, msg.original_packet),
+        Ics20Ack::Result(_) => on_packet_success(deps, env, msg.original_packet),
         Ics20Ack::Error(err) => on_packet_failure(deps, msg.original_packet, err),
     }
 }
@@ -318,7 +424,7 @@ pub fn ibc_packet_ack(
 /// return fund to original sender (same as failure in ibc_packet_ack)
 pub fn ibc_packet_timeout(
     deps: DepsMut,
-    _env: Env,
+    env: Env,
     msg: IbcPacketTimeoutMsg,
 ) -> Result<IbcBasicResponse, ContractError> {
     // TODO: trap error like in receive? (same question as ack above)
@@ -327,7 +433,11 @@ pub fn ibc_packet_timeout(
 }
 
 // update the balance stored on this (channel, denom) index
-fn on_packet_success(_deps: DepsMut, packet: IbcPacket) -> Result<IbcBasicResponse, ContractError> {
+fn on_packet_success(
+    _deps: DepsMut,
+    env: Env,
+    packet: IbcPacket,
+) -> Result<IbcBasicResponse, ContractError> {
     let msg: Ics20Packet = from_json(packet.data)?;
 
     // similar event messages like ibctransfer module
@@ -339,8 +449,20 @@ fn on_packet_success(_deps: DepsMut, packet: IbcPacket) -> Result<IbcBasicRespon
         attr("amount", msg.amount),
         attr("success", "true"),
     ];
-
-    Ok(IbcBasicResponse::new().add_attributes(attributes))
+    if msg.message_recipient.is_some() {
+        Ok(IbcBasicResponse::new()
+            .add_message(CosmosMsg::Ibc(IbcMsg::SendPacket {
+                channel_id: todo!(),
+                data: to_json_binary(&IbcExecuteMsg::ConfirmedAfterFunds {
+                    recipient: msg.message_recipient.unwrap().recipient,
+                    message: msg.message_recipient.unwrap().message,
+                })?,
+                timeout: IbcTimeout::with_timestamp(env.block.time.plus_seconds(60)),
+            }))
+            .add_attributes(attributes))
+    } else {
+        Ok(IbcBasicResponse::new().add_attributes(attributes))
+    }
 }
 
 // return the tokens to sender

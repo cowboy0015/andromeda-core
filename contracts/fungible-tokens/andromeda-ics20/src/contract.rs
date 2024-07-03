@@ -12,7 +12,7 @@ use cw_storage_plus::Bound;
 
 use crate::amount::Amount;
 use crate::error::ContractError;
-use crate::ibc::Ics20Packet;
+use crate::ibc::{Ics20Packet, MessageRecipient};
 use crate::migrations::{v1, v2};
 use crate::msg::{
     AllowMsg, AllowedInfo, AllowedResponse, ChannelResponse, ConfigResponse, ExecuteMsg, InitMsg,
@@ -67,7 +67,14 @@ pub fn execute(
         ExecuteMsg::Receive(msg) => execute_receive(deps, env, info, msg),
         ExecuteMsg::Transfer(msg) => {
             let coin = one_coin(&info)?;
-            execute_transfer(deps, env, msg, Amount::Native(coin), info.sender)
+            execute_transfer(
+                deps,
+                env,
+                msg.clone(),
+                Amount::Native(coin),
+                info.sender,
+                msg.message_recipient,
+            )
         }
         ExecuteMsg::Allow(allow) => execute_allow(deps, env, info, allow),
         ExecuteMsg::UpdateAdmin { admin } => {
@@ -91,7 +98,14 @@ pub fn execute_receive(
         amount: wrapper.amount,
     });
     let api = deps.api;
-    execute_transfer(deps, env, msg, amount, api.addr_validate(&wrapper.sender)?)
+    execute_transfer(
+        deps,
+        env,
+        msg.clone(),
+        amount,
+        api.addr_validate(&wrapper.sender)?,
+        msg.message_recipient,
+    )
 }
 
 pub fn execute_transfer(
@@ -100,6 +114,7 @@ pub fn execute_transfer(
     msg: TransferMsg,
     amount: Amount,
     sender: Addr,
+    message_recipient: Option<MessageRecipient>,
 ) -> Result<Response, ContractError> {
     if amount.is_empty() {
         return Err(ContractError::NoFunds {});
@@ -135,6 +150,7 @@ pub fn execute_transfer(
         amount.denom(),
         sender.as_ref(),
         &msg.remote_address,
+        message_recipient,
     )
     .with_memo(msg.memo);
     packet.validate()?;

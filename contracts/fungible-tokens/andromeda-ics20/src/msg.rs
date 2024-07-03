@@ -1,7 +1,9 @@
 use cosmwasm_schema::{cw_serde, QueryResponses};
+use cosmwasm_std::Binary;
 use cw20::Cw20ReceiveMsg;
 
 use crate::amount::Amount;
+use crate::ibc::MessageRecipient;
 use crate::state::ChannelInfo;
 
 #[cw_serde]
@@ -53,6 +55,7 @@ pub struct TransferMsg {
     pub timeout: Option<u64>,
     /// An optional memo to add to the IBC transfer
     pub memo: Option<String>,
+    pub message_recipient: Option<MessageRecipient>,
 }
 
 #[cw_serde]
