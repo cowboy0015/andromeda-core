@@ -1,3 +1,4 @@
+#![cfg(not(target_arch = "wasm32"))]
 use core::fmt;
 
 use andromeda_std::ado_base::{

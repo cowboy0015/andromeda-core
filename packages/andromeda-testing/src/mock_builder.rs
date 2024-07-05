@@ -1,3 +1,4 @@
+#![cfg(not(target_arch = "wasm32"))]
 use cosmwasm_std::{Addr, Coin, Empty};
 use cw_multi_test::{Contract, Executor};
 
