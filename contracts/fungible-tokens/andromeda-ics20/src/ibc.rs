@@ -10,7 +10,7 @@ use cosmwasm_std::{
     Ibc3ChannelOpenResponse, IbcBasicResponse, IbcChannel, IbcChannelCloseMsg,
     IbcChannelConnectMsg, IbcChannelOpenMsg, IbcEndpoint, IbcMsg, IbcOrder, IbcPacket,
     IbcPacketAckMsg, IbcPacketReceiveMsg, IbcPacketTimeoutMsg, IbcReceiveResponse, IbcTimeout,
-    Reply, Response, SubMsg, SubMsgResult, Timestamp, Uint128, WasmMsg,
+    Reply, Response, SubMsg, SubMsgResult, Uint128, WasmMsg,
 };
 
 use crate::amount::Amount;
@@ -128,10 +128,10 @@ pub enum Ics20Ack {
 }
 
 // create a serialized success message
-fn ack_success() -> Binary {
-    let res = Ics20Ack::Result(b"1".into());
-    to_json_binary(&res).unwrap()
-}
+// fn ack_success() -> Binary {
+//     let res = Ics20Ack::Result(b"1".into());
+//     to_json_binary(&res).unwrap()
+// }
 
 // create a serialized error message
 fn ack_fail(err: String) -> Binary {
@@ -312,8 +312,8 @@ fn do_ibc_packet_receive(
             denom,
             receiver,
             sender,
-            memo,
-            message,
+            memo: _,
+            message: _,
         } => {
             let channel = packet.dest.channel_id.clone();
             // If the token originated on the remote chain, it looks like "ucosm".
@@ -348,7 +348,15 @@ fn do_ibc_packet_receive(
 
             Ok(res)
         }
-        IbcExecuteMsg::ConfirmedAfterFunds { message, recipient } => todo!(),
+        IbcExecuteMsg::ConfirmedAfterFunds { message, recipient } => {
+            let cosmos_msg = CosmosMsg::Wasm(WasmMsg::Execute {
+                contract_addr: recipient,
+                msg: message,
+                funds: vec![],
+            });
+            let res = IbcReceiveResponse::new().add_message(cosmos_msg);
+            Ok(res)
+        }
     }
     // let channel = packet.dest.channel_id.clone();
 
@@ -424,7 +432,7 @@ pub fn ibc_packet_ack(
 /// return fund to original sender (same as failure in ibc_packet_ack)
 pub fn ibc_packet_timeout(
     deps: DepsMut,
-    env: Env,
+    _env: Env,
     msg: IbcPacketTimeoutMsg,
 ) -> Result<IbcBasicResponse, ContractError> {
     // TODO: trap error like in receive? (same question as ack above)
@@ -452,9 +460,9 @@ fn on_packet_success(
     if msg.message_recipient.is_some() {
         Ok(IbcBasicResponse::new()
             .add_message(CosmosMsg::Ibc(IbcMsg::SendPacket {
-                channel_id: todo!(),
+                channel_id: packet.dest.channel_id,
                 data: to_json_binary(&IbcExecuteMsg::ConfirmedAfterFunds {
-                    recipient: msg.message_recipient.unwrap().recipient,
+                    recipient: msg.clone().message_recipient.unwrap().recipient,
                     message: msg.message_recipient.unwrap().message,
                 })?,
                 timeout: IbcTimeout::with_timestamp(env.block.time.plus_seconds(60)),
