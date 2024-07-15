@@ -58,6 +58,10 @@ pub enum IbcExecuteMsg {
         recipient: String,
         message: Binary,
     },
+    TriggerMessageRecipient {
+        recipient: String,
+        message: Binary,
+    },
 }
 
 #[cw_serde]
@@ -258,12 +262,12 @@ pub fn ibc_channel_close(
 /// We should not return an error if possible, but rather an acknowledgement of failure
 pub fn ibc_packet_receive(
     deps: DepsMut,
-    _env: Env,
+    env: Env,
     msg: IbcPacketReceiveMsg,
 ) -> Result<IbcReceiveResponse, Never> {
     let packet = msg.packet;
 
-    do_ibc_packet_receive(deps, &packet).or_else(|err| {
+    do_ibc_packet_receive(deps, env, &packet).or_else(|err| {
         Ok(
             // Removed ack fail
             IbcReceiveResponse::new().add_attributes(vec![
@@ -303,6 +307,7 @@ fn parse_voucher_denom<'a>(
 // this does the work of ibc_packet_receive, we wrap it to turn errors into acknowledgements
 fn do_ibc_packet_receive(
     deps: DepsMut,
+    env: Env,
     packet: &IbcPacket,
 ) -> Result<IbcReceiveResponse, ContractError> {
     let msg: IbcExecuteMsg = from_json(&packet.data)?;
@@ -349,6 +354,17 @@ fn do_ibc_packet_receive(
             Ok(res)
         }
         IbcExecuteMsg::ConfirmedAfterFunds { message, recipient } => {
+            let res = IbcReceiveResponse::new().add_message(CosmosMsg::Ibc(IbcMsg::SendPacket {
+                channel_id: packet.dest.channel_id.clone(),
+                data: to_json_binary(&IbcExecuteMsg::TriggerMessageRecipient {
+                    recipient,
+                    message,
+                })?,
+                timeout: IbcTimeout::with_timestamp(env.block.time.plus_seconds(60)),
+            }));
+            Ok(res)
+        }
+        IbcExecuteMsg::TriggerMessageRecipient { recipient, message } => {
             let cosmos_msg = CosmosMsg::Wasm(WasmMsg::Execute {
                 contract_addr: recipient,
                 msg: message,
