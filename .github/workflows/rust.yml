@@ -14,11 +14,12 @@ jobs:
     name: Linting
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          repository: "cowboy0015/localrelayer.git"
-          token: ${{ secrets.LOCALRELAYER_ACCESS_TOKEN  }}
-          path: "localrelayer"
+      - run: |
+          git clone https://${{ secrets.LOCALRELAYER_ACCESS_TOKEN }}@github.com/cowboy0015/localrelayer.git
+          cd ./localrelayer
+          git checkout develop
+          make start-chains CHAINS="terra-1"
+          make start-validators CHAINS="terra-1"
       - uses: actions/checkout@v2
         with:
           fetch-depth: 1
