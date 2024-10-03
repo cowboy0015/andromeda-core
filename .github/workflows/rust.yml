@@ -91,7 +91,7 @@ jobs:
           fetch-depth: 1
       - name: Setup localrelayer
         run: |
-          git clone https://${{ secrets.LOCALRELAYER_ACCESS_TOKEN }}@github.com/andromedaprotocol/localrelayer.git
+          git clone https://${{ secrets.LOCALRELAYER_ACCESS_TOKEN }}@github.com/cowboy0015/localrelayer.git
           cd ./localrelayer
           git checkout develop
           make start-chains CHAINS="terra-1"
