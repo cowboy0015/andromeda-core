@@ -105,8 +105,7 @@ jobs:
       - name: Run IBC Tests
         run: |
           ls
-          cd ../ibc-tests
-          cargo test -- --show-output
+          cargo test -p ibc-tests --verbose
 
   build-schemas:
     runs-on: ubuntu-latest
