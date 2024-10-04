@@ -104,7 +104,6 @@ jobs:
           
       - name: Run IBC Tests
         run: |
-          cd ..
           ls
           cargo test -p ibc-tests --verbose
 
