@@ -15,6 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: |
+          docker-compose --version
           eval `ssh-agent -s`
           ssh-add - <<< '${{ secrets.SSH_PRIVATE_KEY }}'
           git clone git@github.com:cowboy0015/localrelayer.git
