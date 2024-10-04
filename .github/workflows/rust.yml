@@ -20,8 +20,12 @@ jobs:
           git clone git@github.com:cowboy0015/localrelayer.git
           cd ./localrelayer
           git checkout develop
+          echo "Local relayer successfully cloned"
+          ls
           make start-chains CHAINS="terra-1"
+          echo "Started terr1 chain"
           make start-validators CHAINS="terra-1"
+          echo "Started terr1 cvalidastor"
       - uses: actions/checkout@v2
         with:
           fetch-depth: 1
