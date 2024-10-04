@@ -14,21 +14,6 @@ jobs:
     name: Linting
     runs-on: ubuntu-latest
     steps:
-      - run: |
-          curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-          chmod +x /usr/local/bin/docker-compose
-          docker-compose --version
-          eval `ssh-agent -s`
-          ssh-add - <<< '${{ secrets.SSH_PRIVATE_KEY }}'
-          git clone git@github.com:cowboy0015/localrelayer.git
-          cd ./localrelayer
-          git checkout develop
-          echo "Local relayer successfully cloned"
-          ls
-          make start-chains CHAINS="terra-1"
-          echo "Started terr1 chain"
-          make start-validators CHAINS="terra-1"
-          echo "Started terr1 cvalidastor"
       - uses: actions/checkout@v2
         with:
           fetch-depth: 1
@@ -101,18 +86,25 @@ jobs:
     name: Running E2E Test
     needs: build
     steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 1
+      
+      - name: Setup docker
+        run: |
+          curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          chmod +x /usr/local/bin/docker-compose
+          docker-compose --version
+      - name: Setup ssh
+        run: |
+          eval `ssh-agent -s`
+          ssh-add - <<< '${{ secrets.SSH_PRIVATE_KEY }}'
+      
       - name: Setup localrelayer
         run: |
-          git clone https://${{ secrets.LOCALRELAYER_ACCESS_TOKEN }}@github.com/cowboy0015/localrelayer.git
+          git clone git@github.com:cowboy0015/localrelayer.git
           cd ./localrelayer
           git checkout develop
           make start-chains CHAINS="terra-1"
           make start-validators CHAINS="terra-1"
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
       - name: Run IBC Tests
         run: |
           cd ./ibc-tests
