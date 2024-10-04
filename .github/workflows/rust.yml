@@ -15,7 +15,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: |
-          git clone https://${{ secrets.LOCALRELAYER_ACCESS_TOKEN }}@github.com/cowboy0015/localrelayer.git
+          mkdir --parents "$HOME/.ssh"
+          DEPLOY_KEY_FILE="$HOME/.ssh/deploy_key"
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > "$DEPLOY_KEY_FILE"
+          chmod 600 "$DEPLOY_KEY_FILE"
+          SSH_KNOWN_HOSTS_FILE="$HOME/.ssh/known_hosts"
+          ssh-keyscan -H "github.com" > "$SSH_KNOWN_HOSTS_FILE"
+          export GIT_SSH_COMMAND="ssh -i "$DEPLOY_KEY_FILE" -o UserKnownHostsFile=$SSH_KNOWN_HOSTS_FILE"
+          git clone git@github.com:cowboy0015/localrelayer.git
           cd ./localrelayer
           git checkout develop
           make start-chains CHAINS="terra-1"
