@@ -86,7 +86,7 @@ jobs:
     name: Running E2E Test
     needs: build
     steps:
-      
+      - uses: actions/checkout@v2
       - name: Setup docker
         run: |
           curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
