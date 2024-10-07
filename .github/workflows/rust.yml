@@ -114,6 +114,7 @@ jobs:
           "${GITHUB_WORKSPACE}/ci-scripts/install_binaryen.sh" all
 
       - name: Run IBC Tests
+        run: |
           chmod +x "${GITHUB_WORKSPACE}/build.sh"
           "${GITHUB_WORKSPACE}/build.sh" all
           ls
