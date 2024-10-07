@@ -101,9 +101,19 @@ jobs:
           git checkout develop
           make start-chains CHAINS="terra-1"
           make start-validators CHAINS="terra-1"
-          
-      - name: Run IBC Tests
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: 1.75.0
+      - run: rustup override set 1.75.0
+      - run: rustup target add wasm32-unknown-unknown
+      - uses: actions/checkout@v2
+      - name: Install Binaryen
         run: |
+          chmod +x "${GITHUB_WORKSPACE}/ci-scripts/install_binaryen.sh"
+          "${GITHUB_WORKSPACE}/ci-scripts/install_binaryen.sh" all
+
+      - name: Run IBC Tests
           chmod +x "${GITHUB_WORKSPACE}/build.sh"
           "${GITHUB_WORKSPACE}/build.sh" all
           ls
