@@ -86,7 +86,12 @@ jobs:
     name: Running E2E Test
     needs: build
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: cowboy0015/localrelayer
+          token: ${{ secrets.LOCALRELAYER_ACCESS_TOKEN }}
+          path: localrelayer
       - name: Setup docker
         run: |
           curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
@@ -94,9 +99,6 @@ jobs:
           docker-compose --version
       - name: Setup localrelayer
         run: |
-          eval `ssh-agent -s`
-          ssh-add - <<< '${{ secrets.SSH_PRIVATE_KEY }}'
-          git clone git@github.com:cowboy0015/localrelayer.git
           cd ./localrelayer
           git checkout develop
           make start-chains CHAINS="terra-1"
