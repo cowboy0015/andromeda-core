@@ -104,9 +104,9 @@ jobs:
           
       - name: Run IBC Tests
         run: |
-          ls
           chmod +x "${GITHUB_WORKSPACE}/build.sh"
           "${GITHUB_WORKSPACE}/build.sh" all
+          ls
           cargo test -p ibc-tests --verbose
 
   build-schemas:
