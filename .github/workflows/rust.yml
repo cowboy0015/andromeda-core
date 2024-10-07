@@ -107,7 +107,7 @@ jobs:
           chmod +x "${GITHUB_WORKSPACE}/build.sh"
           "${GITHUB_WORKSPACE}/build.sh" all
           ls
-          cargo test -p ibc-tests --verbose
+          cargo test -p ibc-tests -- --test-threads 1
 
   build-schemas:
     runs-on: ubuntu-latest
